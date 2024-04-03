@@ -10,7 +10,7 @@ import { RankingListItem } from "@/components/rankings/rankings-list-item"
 import { RankingsPageSelector } from "@/components/rankings/rankings-page-selector"
 import { RankingsSkeleton } from "@/components/rankings/rankings-skeleton"
 import { TransitioningRankingsGridItem } from "@/components/rankings/transitioning-rankings-grid-item"
-import { ArtistType, FilterDirection, FilterInclusionMode, FilterOrder, SongType, SourceType } from "@/data/types"
+import { ArtistType, FilterDirection, FilterInclusionMode, FilterOrder, SongRankingsFilterParams, SongType, SourceType } from "@/data/types"
 import { GET_SONG_RANKINGS, buildEntityNames, graphClient } from "@/lib/api"
 import { ApiArtist, ApiSongRankingsFilterResult } from "@/lib/api/types"
 import { buildFuzzyDate } from "@/lib/utils"
@@ -23,6 +23,7 @@ import { useSettings } from "../../../components/providers/settings-provider"
 import { SongRankingsFilterBar } from "./song-rankings-filter-bar"
 import { EntityNames, FilterType, InputFilter, RankingsFilters, RankingsViewMode, SongRankingsFilterBarValues, SongRankingsFiltersValues } from "./types"
 import { decodeBoolean, decodeMultiFilter, encodeBoolean, encodeMultiFilter, getRankingsItemTrailingSupportingText, parseParamSelectFilterValue } from "./utils"
+import { useRouter, useSearchParams } from "next/navigation"
 
 const GET_ARTISTS_NAMES = `
 query GetArtistsNames(
@@ -65,6 +66,98 @@ export function RankingsList(
     // import settings
     const settingTitleLanguage = settings.titleLanguage
     const [rankingsViewMode, setViewMode] = useState(viewMode)
+
+    // unload search params
+    
+    {
+        const searchParams = useSearchParams()
+        searchParams.forEach((value, key) => {
+            switch(key) {
+                case "search":
+                    filterValues.search = value;
+                    break;
+                case "timePeriod":
+                    filterValues.timePeriod = Number.parseInt(value)
+                    break;
+                case "publishYear":
+                    filterValues.publishYear = value
+                    break;
+                case "publishMonth":
+                    filterValues.publishMonth = value
+                    break;
+                case "publishDate":
+                    filterValues.publishDay = value
+                    break;
+                case "includeSourceTypes":
+                    filterValues.includeSourceTypes = value
+                    break;
+                case "excludeSourceTypes":
+                    filterValues.excludeSourceTypes = value
+                    break;
+                case "includeSongTypes":
+                    filterValues.includeSongTypes = value
+                    break;
+                case "excludeSongTypes":
+                    filterValues.excludeSongTypes = value;
+                    break;
+                case "includeArtistTypes":
+                    filterValues.includeArtistTypes = value;
+                    break;
+                case "excludeArtistTypes":
+                    filterValues.excludeArtistTypes = value;
+                    break;
+                case "includeArtistTypesMode":
+                    filterValues.includeArtistTypesMode = Number.parseInt(value);
+                    break;
+                case "excludeArtistTypesMode":
+                    filterValues.excludeArtistTypesMode = Number.parseInt(value);
+                    break;
+                case "minViews":
+                    filterValues.minViews = value;
+                    break;
+                case "maxViews":
+                    filterValues.maxViews = value;
+                    break;
+                case "orderBy":
+                    filterValues.orderBy = Number.parseInt(value);
+                    break;
+                case "from":
+                    filterValues.from = value;
+                    break;
+                case "timestamp":
+                    filterValues.timestamp = value;
+                    break;
+                case "singleVideo":
+                    filterValues.singleVideo = Number.parseInt(value);
+                    break;
+                case "includeArtists":
+                    filterValues.includeArtists = value;
+                    break;
+                case "excludeArtists":
+                    filterValues.excludeArtists = value;
+                    break;
+                case "includeArtistsMode":
+                    filterValues.includeArtistsMode = Number.parseInt(value);
+                    break;
+                case "excludeArtistsMode":
+                    filterValues.excludeArtistsMode = Number.parseInt(value);
+                    break;
+                case "includeSimilarArtists":
+                    filterValues.includeSimilarArtists = Number.parseInt(value);
+                    break;
+                case "direction":
+                    filterValues.direction = Number.parseInt(value);
+                    break;
+                case "startAt":
+                    filterValues.startAt = value;
+                    break;
+                case "list":
+                    filterValues.list = Number.parseInt(value);
+                    break;
+            }
+        })
+    }
+    
 
     // convert current timestamp to date
     const currentTimestampDate = new Date(currentTimestamp)
