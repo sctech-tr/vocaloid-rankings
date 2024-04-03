@@ -305,13 +305,11 @@ export async function generateMetadata(
 
 export default async function RankingsPage(
     {
-        params,
-        searchParams
+        params
     }: {
         params: {
             lang: Locale
-        },
-        searchParams: SongRankingsFiltersValues
+        }
     }
 ) {
     // import language dictionary
@@ -326,15 +324,12 @@ export default async function RankingsPage(
 
     const mostRecentTimestamp = (await getMostRecentViewsTimestamp()) || generateTimestamp()
 
-    console.log("get songs page")
-
     return (
         <section className="flex flex-col gap-5 w-full min-h-screen">
             <h1 className="font-bold md:text-5xl md:text-left text-4xl text-center w-full mb-5">{langDict.rankings_page_title}</h1>
             <RankingsList
                 href=''
                 filters={songRankingsFilters}
-                filterValues={searchParams}
                 currentTimestamp={mostRecentTimestamp}
                 viewMode={viewMode}
             />

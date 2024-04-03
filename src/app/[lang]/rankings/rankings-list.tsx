@@ -47,13 +47,11 @@ export function RankingsList(
     {
         href,
         filters,
-        filterValues,
         currentTimestamp,
         viewMode
     }: {
         href: string
         filters: RankingsFilters
-        filterValues: SongRankingsFiltersValues
         currentTimestamp: string
         viewMode: RankingsViewMode
     }
@@ -67,130 +65,41 @@ export function RankingsList(
     const settingTitleLanguage = settings.titleLanguage
     const [rankingsViewMode, setViewMode] = useState(viewMode)
 
-    // unload search params
-    
-    {
-        const searchParams = useSearchParams()
-        searchParams.forEach((value, key) => {
-            switch(key) {
-                case "search":
-                    filterValues.search = value;
-                    break;
-                case "timePeriod":
-                    filterValues.timePeriod = Number.parseInt(value)
-                    break;
-                case "publishYear":
-                    filterValues.publishYear = value
-                    break;
-                case "publishMonth":
-                    filterValues.publishMonth = value
-                    break;
-                case "publishDate":
-                    filterValues.publishDay = value
-                    break;
-                case "includeSourceTypes":
-                    filterValues.includeSourceTypes = value
-                    break;
-                case "excludeSourceTypes":
-                    filterValues.excludeSourceTypes = value
-                    break;
-                case "includeSongTypes":
-                    filterValues.includeSongTypes = value
-                    break;
-                case "excludeSongTypes":
-                    filterValues.excludeSongTypes = value;
-                    break;
-                case "includeArtistTypes":
-                    filterValues.includeArtistTypes = value;
-                    break;
-                case "excludeArtistTypes":
-                    filterValues.excludeArtistTypes = value;
-                    break;
-                case "includeArtistTypesMode":
-                    filterValues.includeArtistTypesMode = Number.parseInt(value);
-                    break;
-                case "excludeArtistTypesMode":
-                    filterValues.excludeArtistTypesMode = Number.parseInt(value);
-                    break;
-                case "minViews":
-                    filterValues.minViews = value;
-                    break;
-                case "maxViews":
-                    filterValues.maxViews = value;
-                    break;
-                case "orderBy":
-                    filterValues.orderBy = Number.parseInt(value);
-                    break;
-                case "from":
-                    filterValues.from = value;
-                    break;
-                case "timestamp":
-                    filterValues.timestamp = value;
-                    break;
-                case "singleVideo":
-                    filterValues.singleVideo = Number.parseInt(value);
-                    break;
-                case "includeArtists":
-                    filterValues.includeArtists = value;
-                    break;
-                case "excludeArtists":
-                    filterValues.excludeArtists = value;
-                    break;
-                case "includeArtistsMode":
-                    filterValues.includeArtistsMode = Number.parseInt(value);
-                    break;
-                case "excludeArtistsMode":
-                    filterValues.excludeArtistsMode = Number.parseInt(value);
-                    break;
-                case "includeSimilarArtists":
-                    filterValues.includeSimilarArtists = Number.parseInt(value);
-                    break;
-                case "direction":
-                    filterValues.direction = Number.parseInt(value);
-                    break;
-                case "startAt":
-                    filterValues.startAt = value;
-                    break;
-                case "list":
-                    filterValues.list = Number.parseInt(value);
-                    break;
-            }
-        })
-    }
-    
+    // import search params
+    const searchParams = useSearchParams()
 
     // convert current timestamp to date
     const currentTimestampDate = new Date(currentTimestamp)
 
     // convert filterValues into filterBarValues
     let [filterBarValues, setFilterValues] = useState({
-        search: filterValues.search,
-        timePeriod: filterValues.timePeriod,
-        publishYear: filterValues.publishYear,
-        publishMonth: filterValues.publishMonth,
-        publishDay: filterValues.publishDay,
-        includeSourceTypes: decodeMultiFilter(filterValues.includeSourceTypes),
-        excludeSourceTypes: decodeMultiFilter(filterValues.excludeSourceTypes),
-        includeSongTypes: decodeMultiFilter(filterValues.includeSongTypes),
-        excludeSongTypes: decodeMultiFilter(filterValues.excludeSongTypes),
-        includeArtistTypes: decodeMultiFilter(filterValues.includeArtistTypes),
-        excludeArtistTypes: decodeMultiFilter(filterValues.excludeArtistTypes),
-        includeArtistTypesMode: filterValues.includeArtistTypesMode,
-        excludeArtistTypesMode: filterValues.excludeArtistTypesMode,
-        minViews: filterValues.minViews,
-        maxViews: filterValues.maxViews,
-        orderBy: filterValues.orderBy,
-        from: filterValues.from ? new Date(filterValues.from) : undefined,
-        timestamp: filterValues.timestamp ? new Date(filterValues.timestamp) : undefined,
-        singleVideo: decodeBoolean(Number(filterValues.singleVideo)),
-        includeArtists: decodeMultiFilter(filterValues.includeArtists),
-        excludeArtists: decodeMultiFilter(filterValues.excludeArtists),
-        includeArtistsMode: filterValues.includeArtistsMode,
-        excludeArtistsMode: filterValues.excludeArtistsMode,
-        includeSimilarArtists: decodeBoolean(Number(filterValues.includeSimilarArtists)),
-        direction: filterValues.direction,
-        startAt: filterValues.startAt,
-        list: filterValues.list
+        search: searchParams.get('search') || undefined,
+        timePeriod: searchParams.get('timePeriod') === null ? undefined : Number.parseInt(searchParams.get('timePeriod') as string),
+        publishYear: searchParams.get('publishYear') || undefined,
+        publishMonth: searchParams.get('publishMonth') || undefined,
+        publishDay: searchParams.get('publishDay') || undefined,
+        includeSourceTypes: decodeMultiFilter(searchParams.get('includeSourceTypes') || undefined),
+        excludeSourceTypes: decodeMultiFilter(searchParams.get('excludeSourceTypes') || undefined),
+        includeSongTypes: decodeMultiFilter(searchParams.get('includeSongTypes') || undefined),
+        excludeSongTypes: decodeMultiFilter(searchParams.get('excludeSongTypes') || undefined),
+        includeArtistTypes: decodeMultiFilter(searchParams.get('includeArtistTypes') || undefined),
+        excludeArtistTypes: decodeMultiFilter(searchParams.get('excludeArtistTypes') || undefined),
+        includeArtistTypesMode: searchParams.get('includeArtistTypesMode') === null ? undefined : Number.parseInt(searchParams.get('includeArtistTypesMode') as string),
+        excludeArtistTypesMode: searchParams.get('excludeArtistTypesMode') === null ? undefined : Number.parseInt(searchParams.get('excludeArtistTypesMode') as string),
+        minViews: searchParams.get('minViews') || undefined,
+        maxViews: searchParams.get('maxViews') || undefined,
+        orderBy: searchParams.get('orderBy') === null ? undefined : Number.parseInt(searchParams.get('orderBy') as string),
+        from: searchParams.get('from') === null ? undefined : new Date(searchParams.get('from') as string),
+        timestamp: searchParams.get('timestamp') === null ? undefined : new Date(searchParams.get('timestamp') as string),
+        singleVideo: decodeBoolean(Number(searchParams.get('singleVideo') || undefined)),
+        includeArtists: decodeMultiFilter(searchParams.get('includeArtists') || undefined),
+        excludeArtists: decodeMultiFilter(searchParams.get('excludeArtists') || undefined),
+        includeArtistsMode: searchParams.get('includeArtistsMode') === null ? undefined : Number.parseInt(searchParams.get('includeArtistsMode') as string),
+        excludeArtistsMode: searchParams.get('excludeArtistsMode') === null ? undefined : Number.parseInt(searchParams.get('excludeArtistsMode') as string),
+        includeSimilarArtists: decodeBoolean(Number(searchParams.get('includeSimilarArtists') || undefined)),
+        direction: searchParams.get('direction') === null ? undefined : Number.parseInt(searchParams.get('direction') as string),
+        startAt: searchParams.get('startAt') || undefined,
+        list: searchParams.get('list') === null ? undefined : Number.parseInt(searchParams.get('list') as string)
     } as SongRankingsFilterBarValues)
 
     // entity names state
