@@ -110,7 +110,9 @@ const filters: ArtistRankingsFilters = {
         values: [
             { name: 'filter_song_type_original', value: SongType.ORIGINAL },
             { name: 'filter_song_type_remix', value: SongType.REMIX },
-            { name: 'filter_song_type_other', value: SongType.OTHER },
+            { name: 'filter_song_type_cover', value: SongType.COVER },
+            { name: 'filter_song_type_remaster', value: SongType.REMASTER },
+            { name: 'filter_song_type_other', value: SongType.OTHER }
         ]
     },
     excludeSongTypes: {
@@ -121,7 +123,9 @@ const filters: ArtistRankingsFilters = {
         values: [
             { name: 'filter_song_type_original', value: SongType.ORIGINAL },
             { name: 'filter_song_type_remix', value: SongType.REMIX },
-            { name: 'filter_song_type_other', value: SongType.OTHER },
+            { name: 'filter_song_type_cover', value: SongType.COVER },
+            { name: 'filter_song_type_remaster', value: SongType.REMASTER },
+            { name: 'filter_song_type_other', value: SongType.OTHER }
         ]
     },
     includeArtistTypes: {

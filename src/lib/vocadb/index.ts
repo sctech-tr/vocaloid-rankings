@@ -68,7 +68,8 @@ const artistTypeMap: { [key: string]: ArtistType } = {
 const songTypeMap: { [key: string]: SongType } = {
     'Original': SongType.ORIGINAL,
     'Cover': SongType.COVER,
-    'Remix': SongType.REMIX
+    'Remix': SongType.REMIX,
+    'Remaster': SongType.REMASTER
 }
 
 // A blacklist of non-vocal-synth singers.
@@ -312,6 +313,8 @@ const parseVocaDBSongAsync = (
 
             const dateNow = new Date()
 
+            const type = songTypeMap[songType]
+
             resolve({
                 id: vocaDBSong.id,
                 publishDate: new Date(vocaDBSong.publishDate),
@@ -324,8 +327,8 @@ const parseVocaDBSongAsync = (
                     total: totalViews,
                     breakdown: viewsBreakdown
                 },
-                type: songTypeMap[songType],
-                thumbnail: thumbnail,
+                type: type === undefined ? SongType.OTHER : type, // if the song type is undefined, default to the OTHER type.
+               thumbnail: thumbnail,
                 maxresThumbnail: maxResThumbnail,
                 artistsCategories: artistsCategories,
                 artists: artists,

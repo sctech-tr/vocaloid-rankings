@@ -11,7 +11,8 @@ export enum SongType {
     ORIGINAL,
     REMIX,
     OTHER,
-    COVER
+    COVER,
+    REMASTER
 }
 
 export enum SourceType {
