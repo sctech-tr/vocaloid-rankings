@@ -96,7 +96,6 @@ export default async function ListPage(
             <RankingsList
                 href=''
                 filters={songRankingsFilters}
-                filterValues={searchParams}
                 currentTimestamp={mostRecentTimestamp}
                 viewMode={viewMode}
             />
