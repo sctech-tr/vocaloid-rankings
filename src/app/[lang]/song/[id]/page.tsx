@@ -75,12 +75,12 @@ export default async function SongPage(
     const song = !isNaN(songId) ? await getSong(songId) : null
     if (!song) return notFound()
 
-    if (song.isDormant) {
+    if (song.isDormant && song.views) {
 
         // update song views
-        const views = await getSongMostRecentViews(song.id)
+        const views = await getSongMostRecentViews(song.id, undefined, song.views)
         if (views) {
-            await insertSongViews(song.id, views)
+            await insertSongViews(song.id, views.views)
         }
 
         // set song to not be dormant

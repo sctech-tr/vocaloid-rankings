@@ -266,8 +266,8 @@ const parseVocaDBSongAsync = (
 
                         const views = await poller.getViews(pvID)
                         const thumbnails = await poller.getThumbnails(pvID)
-                        if (!views) { return reject(`No view data found for pv ${pvID}`) }
-                        if (!thumbnails) { return reject(`No thumbnails for for pv ${pvID}`) }
+                        if (views === null) { return reject(`No view data found for pv ${pvID}`) }
+                        if (thumbnails === null) { return reject(`No thumbnails for for pv ${pvID}`) }
 
                         // add to total views
                         let breakdownBucket = viewsBreakdown[pvType]
@@ -418,10 +418,10 @@ export const getVocaDBRecentSongs = (
 
                         if (entryData.songType != "Cover") {
                             const song = await getVocaDBSong(entryData.id)
-                            const views = await getSongMostRecentViews(song.id, timestamp)
+                            const viewsResult = await getSongMostRecentViews(song.id, timestamp)
 
-                            if (views != null) {
-
+                            if (viewsResult !== null) {
+                                const views = viewsResult.views
                                 if ((views.total >= vocaDBRecentSongsViewsThreshold) && (vocaDBRecentSongsUploadDateThreshold > (timeNow.getTime() - new Date(entryData.publishDate).getTime()))) {
                                     console.log(`${entryData.id} meets views threshold (${views.total} views)`)
                                     recentSongs.push(song)

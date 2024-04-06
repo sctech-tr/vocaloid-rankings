@@ -14,7 +14,6 @@ const headers = {
 async function getViewsFallback(
     videoId: VideoId
 ): Promise<number | null> {
-    console.log('niconico views fallback')
     const result = await fetch(nicoNicoVideoDomain + videoId, {
         method: 'GET',
     })

@@ -6,7 +6,7 @@ import { getVocaDBRecentSongs } from "@/lib/vocadb";
 import { Locale } from "@/localization";
 import type { Statement } from "better-sqlite3";
 import getDatabase, { Databases } from ".";
-import { Artist, ArtistCategory, ArtistPlacement, ArtistRankingsFilterParams, ArtistRankingsFilterResult, ArtistRankingsFilterResultItem, ArtistThumbnailType, ArtistThumbnails, ArtistType, FilterInclusionMode, HistoricalViews, HistoricalViewsResult, Id, List, ListLocalizationType, ListLocalizations, NameType, Names, PlacementChange, RawArtistData, RawArtistName, RawArtistRankingResult, RawArtistThumbnail, RawList, RawListLocalization, RawListSong, RawSongArtist, RawSongData, RawSongName, RawSongRankingsResult, RawSongVideoId, RawViewBreakdown, Song, SongArtistsCategories, SongPlacement, SongRankingsFilterParams, SongRankingsFilterResult, SongRankingsFilterResultItem, SongType, SongVideoIds, SourceType, SqlRankingsFilterInVariables, SqlRankingsFilterParams, SqlRankingsFilterStatements, SqlSearchArtistsFilterParams, SqlSearchSongsFilterParams, User, UserAccessLevel, Views, ViewsBreakdown } from "./types";
+import { Artist, ArtistCategory, ArtistPlacement, ArtistRankingsFilterParams, ArtistRankingsFilterResult, ArtistRankingsFilterResultItem, ArtistThumbnailType, ArtistThumbnails, ArtistType, FilterInclusionMode, HistoricalViews, HistoricalViewsResult, Id, List, ListLocalizationType, ListLocalizations, NameType, Names, PlacementChange, RawArtistData, RawArtistName, RawArtistRankingResult, RawArtistThumbnail, RawList, RawListLocalization, RawListSong, RawSongArtist, RawSongData, RawSongName, RawSongRankingsResult, RawSongVideoId, RawViewBreakdown, Song, SongArtistsCategories, SongPlacement, SongRankingsFilterParams, SongRankingsFilterResult, SongRankingsFilterResultItem, SongType, SongVideoIds, SourceType, SqlRankingsFilterInVariables, SqlRankingsFilterParams, SqlRankingsFilterStatements, SqlSearchArtistsFilterParams, SqlSearchSongsFilterParams, User, UserAccessLevel, VideoViews, Views, ViewsBreakdown } from "./types";
 
 // import database
 const db = getDatabase(Databases.SONGS_DATA)
@@ -2587,19 +2587,25 @@ async function getPlatformViews(
     maxRetries: number = 5,
     retryDelay: number = 1000,
     depth: number = 0
-): Promise<number> {
+): Promise<number | null> {
     try {
-        return await viewPlatformProviders[platform](videoId) || 0
+        return await viewPlatformProviders[platform](videoId) || null
     } catch (error) {
         await new Promise(resolve => setTimeout(resolve, retryDelay));
-        return maxRetries > depth ? getPlatformViews(videoId, platform, maxRetries, retryDelay, depth + 1) : 0
+        return maxRetries > depth ? getPlatformViews(videoId, platform, maxRetries, retryDelay, depth + 1) : null
     }
+}
+
+export interface SongMostRecentViewsResult {
+    views: Views,
+    didFallback: boolean
 }
 
 export async function getSongMostRecentViews(
     id: Id,
-    timestamp?: string
-): Promise<Views | null> {
+    timestamp?: string,
+    fallbackViews?: Views
+): Promise<SongMostRecentViewsResult | null> {
     try {
         const song = getSongSync(id, false);
         if (!song) return null;
@@ -2607,14 +2613,29 @@ export async function getSongMostRecentViews(
         let totalViews = 0;
         const breakdown: ViewsBreakdown = {};
 
+        let didFallback = false;
+
         for (const [rawSourceType, sourceVideoIds] of Object.entries(song.videoIds)) {
             const sourceType = Number(rawSourceType) as SourceType;
+            const fallbackBucket = fallbackViews?.breakdown[sourceType]
 
             if (sourceVideoIds) {
                 const bucket = [];
                 
+                // generate fallback map
+                const fallbackMap: {[key: string]: number} = {};
+                if (fallbackBucket) {
+                    for (const views of fallbackBucket) {
+                        fallbackMap[views.id] = Number(views.views)
+                    }
+                }
+
                 for (const videoId of sourceVideoIds) {
-                    const views = await getPlatformViews(videoId, sourceType)
+                    let views = await getPlatformViews(videoId, sourceType)
+                    if (views === null) {
+                        views = fallbackMap[videoId] || 0
+                        didFallback = true;
+                    }
                     bucket.push({ id: videoId, views: views });
                     totalViews += views;
                 }
@@ -2624,10 +2645,13 @@ export async function getSongMostRecentViews(
         }
 
         return {
-            total: totalViews,
-            breakdown,
-            timestamp
-        };
+            views: {
+                total: totalViews,
+                breakdown,
+                timestamp
+            },
+            didFallback: didFallback
+        }
     } catch (error) {
         throw error;
     }
@@ -2688,46 +2712,16 @@ export async function refreshAllSongsViews(
             try {
                 const previousViews = getSongViewsSync(song.id)
                 if (!song.dormant) {
-                    const views = await getSongMostRecentViews(song.id, timestamp);
-                    if (!views) throw new Error('Most recent views was null.');
-
-                    // if the newest views fall below a certain threshold, return their view counts to their previous state
-                    let viewsReverted = false
-                    if (previousViews) {
-                        const breakdown = views.breakdown
-                        const previousBreakdown = previousViews.breakdown
-                        let newTotal = 0
-                        for (const rawSourceType in previousViews.breakdown) {
-                            const sourceType = Number(rawSourceType) as SourceType
-
-                            const bucket = breakdown[sourceType] || []
-                            const previousBucket = previousBreakdown[sourceType]
-                            const previousMap = previousBucket ? previousBucket.reduce((acc: Record<string, number | bigint>, views) => {
-                                acc[views.id] = views.views
-                                return acc;
-                            }, {}) : null
-
-                            if (previousMap) {
-                                bucket.forEach(views => {
-                                    const previousViews = previousMap[views.id]
-                                    // if 25% previousViews is greater than the most recent views, revert to the previous view count.
-                                    if (previousViews && ((Number(previousViews) * 0.25) >= views.views)) {
-                                        viewsReverted = true
-                                        views.views = previousViews
-                                    }
-                                    newTotal += Number(views.views)
-                                })
-                            }
-                        }
-                        views.total = newTotal || views.total
-                    }
+                    const viewsResult = await getSongMostRecentViews(song.id, timestamp, previousViews || undefined);
+                    if (!viewsResult) throw new Error('Most recent views was null.');
+                    const views = viewsResult.views
 
                     insertSongViewsSync(song.id, views);
                     console.log(`Refreshed views for (${song.id})`);
 
                     // make song dormant if necessary
                     if (previousViews
-                        && (!viewsReverted)
+                        && (!viewsResult.didFallback)
                         && (minDormantViews >= (Number(views.total) - Number(previousViews.total)))
                         && ((timeNow - song.publishTime) >= minDormantPublishAge)
                         && ((timeNow - song.additionTime) >= minDormantAdditionAge)
