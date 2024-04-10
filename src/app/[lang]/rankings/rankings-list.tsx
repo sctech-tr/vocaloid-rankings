@@ -22,7 +22,7 @@ import { TransitionGroup } from "react-transition-group"
 import { useSettings } from "../../../components/providers/settings-provider"
 import { SongRankingsFilterBar } from "./song-rankings-filter-bar"
 import { EntityNames, FilterType, InputFilter, RankingsFilters, RankingsViewMode, SongRankingsFilterBarValues, SongRankingsFiltersValues } from "./types"
-import { decodeBoolean, decodeMultiFilter, encodeBoolean, encodeMultiFilter, getRankingsItemTrailingSupportingText, parseParamSelectFilterValue } from "./utils"
+import { decodeBoolean, decodeMultiFilter, encodeBoolean, encodeMultiFilter, getDateSearchParam, getNumericSearchParam, getRankingsItemTrailingSupportingText, parseParamSelectFilterValue, pickSongDefaultOrSearchParam } from "./utils"
 import { useRouter, useSearchParams } from "next/navigation"
 
 const GET_ARTISTS_NAMES = `
@@ -47,11 +47,13 @@ export function RankingsList(
     {
         href,
         filters,
+        defaultFilters,
         currentTimestamp,
         viewMode
     }: {
         href: string
         filters: RankingsFilters
+        defaultFilters: SongRankingsFiltersValues
         currentTimestamp: string
         viewMode: RankingsViewMode
     }
@@ -72,35 +74,8 @@ export function RankingsList(
     const currentTimestampDate = new Date(currentTimestamp)
 
     // convert filterValues into filterBarValues
-    let [filterBarValues, setFilterValues] = useState({
-        search: searchParams.get('search') || undefined,
-        timePeriod: searchParams.get('timePeriod') === null ? undefined : Number.parseInt(searchParams.get('timePeriod') as string),
-        publishYear: searchParams.get('publishYear') || undefined,
-        publishMonth: searchParams.get('publishMonth') || undefined,
-        publishDay: searchParams.get('publishDay') || undefined,
-        includeSourceTypes: decodeMultiFilter(searchParams.get('includeSourceTypes') || undefined),
-        excludeSourceTypes: decodeMultiFilter(searchParams.get('excludeSourceTypes') || undefined),
-        includeSongTypes: decodeMultiFilter(searchParams.get('includeSongTypes') || undefined),
-        excludeSongTypes: decodeMultiFilter(searchParams.get('excludeSongTypes') || undefined),
-        includeArtistTypes: decodeMultiFilter(searchParams.get('includeArtistTypes') || undefined),
-        excludeArtistTypes: decodeMultiFilter(searchParams.get('excludeArtistTypes') || undefined),
-        includeArtistTypesMode: searchParams.get('includeArtistTypesMode') === null ? undefined : Number.parseInt(searchParams.get('includeArtistTypesMode') as string),
-        excludeArtistTypesMode: searchParams.get('excludeArtistTypesMode') === null ? undefined : Number.parseInt(searchParams.get('excludeArtistTypesMode') as string),
-        minViews: searchParams.get('minViews') || undefined,
-        maxViews: searchParams.get('maxViews') || undefined,
-        orderBy: searchParams.get('orderBy') === null ? undefined : Number.parseInt(searchParams.get('orderBy') as string),
-        from: searchParams.get('from') === null ? undefined : new Date(searchParams.get('from') as string),
-        timestamp: searchParams.get('timestamp') === null ? undefined : new Date(searchParams.get('timestamp') as string),
-        singleVideo: decodeBoolean(Number(searchParams.get('singleVideo') || undefined)),
-        includeArtists: decodeMultiFilter(searchParams.get('includeArtists') || undefined),
-        excludeArtists: decodeMultiFilter(searchParams.get('excludeArtists') || undefined),
-        includeArtistsMode: searchParams.get('includeArtistsMode') === null ? undefined : Number.parseInt(searchParams.get('includeArtistsMode') as string),
-        excludeArtistsMode: searchParams.get('excludeArtistsMode') === null ? undefined : Number.parseInt(searchParams.get('excludeArtistsMode') as string),
-        includeSimilarArtists: decodeBoolean(Number(searchParams.get('includeSimilarArtists') || undefined)),
-        direction: searchParams.get('direction') === null ? undefined : Number.parseInt(searchParams.get('direction') as string),
-        startAt: searchParams.get('startAt') || undefined,
-        list: searchParams.get('list') === null ? undefined : Number.parseInt(searchParams.get('list') as string)
-    } as SongRankingsFilterBarValues)
+    let [filterBarValues, setFilterValues] = useState<SongRankingsFilterBarValues>({})
+    let [filterBarValuesLoaded, setFilterValuesLoaded] = useState(false)
 
     // entity names state
     const [entityNames, setEntityNames] = useState({} as EntityNames)
@@ -165,7 +140,8 @@ export function RankingsList(
     // import graphql context
     const [queryVariables, setQueryVariables] = useState(getQueryVariables)
     const { loading, error, data } = useQuery(GET_SONG_RANKINGS, {
-        variables: queryVariables
+        variables: queryVariables,
+        skip: !filterBarValuesLoaded
     })
     const rankingsResult = data?.songRankings as ApiSongRankingsFilterResult | undefined
 
@@ -173,40 +149,77 @@ export function RankingsList(
     function saveFilterValues(
         newValues: SongRankingsFilterBarValues,
         refresh: boolean = true,
-        merge: boolean = true
+        merge: boolean = true,
+        setParams: boolean = true
     ) {
         filterBarValues = merge ? { ...newValues } : newValues
         setFilterValues(filterBarValues)
         // set url
         if (refresh) {
-            const queryBuilder = []
-            for (const key in filterBarValues) {
-                const value = filterBarValues[key as keyof typeof filterBarValues]
-                const filter = filters[key as keyof typeof filters]
-                if (value != undefined && filter) {
-                    switch (filter.type) {
-                        case FilterType.SELECT:
-                        case FilterType.INPUT:
-                            if (value != (filter as InputFilter).defaultValue) queryBuilder.push(`${key}=${value}`)
-                            break
-                        case FilterType.CHECKBOX:
-                            if (value) queryBuilder.push(`${key}=${encodeBoolean(value as boolean)}`)
-                            break
-                        case FilterType.MULTI_ENTITY:
-                        case FilterType.MULTI:
-                            const encoded = encodeMultiFilter(value as number[])
-                            if (encoded != '') queryBuilder.push(`${key}=${encoded}`)
-                            break
-                        case FilterType.TIMESTAMP:
-                            queryBuilder.push(`${key}=${(value as Date).toISOString()}`)
-                            break
+            if (setParams) {
+                const queryBuilder = []
+                for (const key in filterBarValues) {
+                    const value = filterBarValues[key as keyof typeof filterBarValues]
+                    const filter = filters[key as keyof typeof filters]
+                    if (value != undefined && filter) {
+                        switch (filter.type) {
+                            case FilterType.SELECT:
+                            case FilterType.INPUT:
+                                if (value != (filter as InputFilter).defaultValue) queryBuilder.push(`${key}=${value}`)
+                                break
+                            case FilterType.CHECKBOX:
+                                if (value) queryBuilder.push(`${key}=${encodeBoolean(value as boolean)}`)
+                                break
+                            case FilterType.MULTI_ENTITY:
+                            case FilterType.MULTI:
+                                const encoded = encodeMultiFilter(value as number[])
+                                if (encoded != '') queryBuilder.push(`${key}=${encoded}`)
+                                break
+                            case FilterType.TIMESTAMP:
+                                queryBuilder.push(`${key}=${(value as Date).toISOString()}`)
+                                break
+                        }
                     }
                 }
+                history.pushState({}, 'Song rankings filter changed.', `${href}?${queryBuilder.join('&')}`)
             }
-            history.pushState({}, 'Song rankings filter changed.', `${href}?${queryBuilder.join('&')}`)
             setQueryVariables(getQueryVariables())
         }
     }
+
+    // load search parameters
+    useEffect(() => {
+        setFilterValuesLoaded(true)
+        saveFilterValues({
+            search: pickSongDefaultOrSearchParam(searchParams, defaultFilters, 'search'),
+            timePeriod: getNumericSearchParam(pickSongDefaultOrSearchParam(searchParams, defaultFilters, 'timePeriod')),
+            publishYear: pickSongDefaultOrSearchParam(searchParams, defaultFilters, 'publishYear'),
+            publishMonth: pickSongDefaultOrSearchParam(searchParams, defaultFilters, 'publishMonth'),
+            publishDay: pickSongDefaultOrSearchParam(searchParams, defaultFilters, 'publishDay'),
+            includeSourceTypes: decodeMultiFilter(pickSongDefaultOrSearchParam(searchParams, defaultFilters, 'includeSourceTypes')),
+            excludeSourceTypes: decodeMultiFilter(pickSongDefaultOrSearchParam(searchParams, defaultFilters, 'excludeSourceTypes')),
+            includeSongTypes: decodeMultiFilter(pickSongDefaultOrSearchParam(searchParams, defaultFilters, 'includeSongTypes')),
+            excludeSongTypes: decodeMultiFilter(pickSongDefaultOrSearchParam(searchParams, defaultFilters, 'excludeSongTypes')),
+            includeArtistTypes: decodeMultiFilter(pickSongDefaultOrSearchParam(searchParams, defaultFilters, 'includeArtistTypes')),
+            excludeArtistTypes: decodeMultiFilter(pickSongDefaultOrSearchParam(searchParams, defaultFilters, 'excludeArtistTypes')),
+            includeArtistTypesMode: getNumericSearchParam(pickSongDefaultOrSearchParam(searchParams, defaultFilters, 'includeArtistTypesMode')),
+            excludeArtistTypesMode: getNumericSearchParam(pickSongDefaultOrSearchParam(searchParams, defaultFilters, 'excludeArtistTypesMode')),
+            minViews: pickSongDefaultOrSearchParam(searchParams, defaultFilters, 'minViews'),
+            maxViews: pickSongDefaultOrSearchParam(searchParams, defaultFilters, 'maxViews'),
+            orderBy: getNumericSearchParam(pickSongDefaultOrSearchParam(searchParams, defaultFilters, 'orderBy')),
+            from: getDateSearchParam(pickSongDefaultOrSearchParam(searchParams, defaultFilters, 'from')),
+            timestamp: getDateSearchParam(pickSongDefaultOrSearchParam(searchParams, defaultFilters, 'timestamp')),
+            singleVideo: decodeBoolean(getNumericSearchParam(pickSongDefaultOrSearchParam(searchParams, defaultFilters, 'singleVideo'))),
+            includeArtists: decodeMultiFilter(pickSongDefaultOrSearchParam(searchParams, defaultFilters, 'includeArtists')),
+            excludeArtists: decodeMultiFilter(pickSongDefaultOrSearchParam(searchParams, defaultFilters, 'excludeArtists')),
+            includeArtistsMode: getNumericSearchParam(pickSongDefaultOrSearchParam(searchParams, defaultFilters, 'includeArtistsMode')),
+            excludeArtistsMode: getNumericSearchParam(pickSongDefaultOrSearchParam(searchParams, defaultFilters, 'excludeArtistsMode')),
+            includeSimilarArtists: decodeBoolean(getNumericSearchParam(pickSongDefaultOrSearchParam(searchParams, defaultFilters, 'includeSimilarArtists'))),
+            direction: getNumericSearchParam(pickSongDefaultOrSearchParam(searchParams, defaultFilters, 'direction')),
+            startAt: pickSongDefaultOrSearchParam(searchParams, defaultFilters, 'startAt'),
+            list: getNumericSearchParam(pickSongDefaultOrSearchParam(searchParams, defaultFilters, 'list'))
+        }, true, true, false)
+    }, [])
 
     // load entity names map
     useEffect(() => {
@@ -227,7 +240,7 @@ export function RankingsList(
                 }
             }).catch(_ => { })
         }
-    }, [settingTitleLanguage])
+    }, [settingTitleLanguage, filterBarValuesLoaded])
 
     // load view mode
     useEffect(() => {
@@ -251,10 +264,10 @@ export function RankingsList(
                 entityNames={entityNames}
                 setEntityNames={newNames => setEntityNames({ ...newNames })}
             />
-            <Divider className="mb-5"/>
-            
-            {error ? <RankingsApiError error={error}/>
-                : !loading && (rankingsResult == undefined || 0 >= rankingsResult.results.length) ? <h2 className="text-3xl font-bold text-center text-on-background">{langDict.search_no_results}</h2>
+            <Divider className="mb-5" />
+
+            {error ? <RankingsApiError error={error} />
+                : !loading && filterBarValuesLoaded && (rankingsResult == undefined || 0 >= rankingsResult.results.length) ? <h2 className="text-3xl font-bold text-center text-on-background">{langDict.search_no_results}</h2>
                     : rankingsResult == undefined ? <RankingsSkeleton elementCount={50} viewMode={rankingsViewMode} />
                         : <RankingsContainer viewMode={rankingsViewMode}>
                             <TransitionGroup component={null}>{rankingsResult.results.map(ranking => {
@@ -302,7 +315,7 @@ export function RankingsList(
                         </RankingsContainer>
             }
             <RankingsPageSelector
-                currentOffset={ Number(filterBarValues.startAt)}
+                currentOffset={Number(filterBarValues.startAt)}
                 totalCount={rankingsResult?.totalCount}
                 onOffsetChanged={(newOffset) => {
                     filterBarValues.startAt = newOffset.toString()

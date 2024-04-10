@@ -1,6 +1,7 @@
 import { FilterOrder } from "@/data/types"
-import { SelectFilterValue } from "./types"
+import { SelectFilterValue, SongRankingsFiltersValues } from "./types"
 import { RankingsItemTrailingMode } from "@/components/rankings/rankings-item-trailing"
+import { ReadonlyURLSearchParams } from "next/navigation"
 
 export function encodeBoolean(
     bool: boolean
@@ -39,6 +40,35 @@ export function decodeMultiFilter(
     })
 
     return output
+}
+
+
+/**
+ * Helper function for extracting an integer value from search parameters.
+ * 
+ * @param params The search parameters to extract the value from.
+ * @param key The key of the value to extract.
+ * @returns The extracted number or undefined.
+ */
+export function getNumericSearchParam(value: string | undefined): number | undefined {
+    return value !== undefined ? parseInt(value) : undefined
+}
+
+/**
+ * Helper function for extracting a Date value from search parameters.
+ * 
+ * @param params The search parameters to extract the value from.
+ * @param key The key of the value to extract.
+ * @returns The extracted Date or undefined.
+ */
+export function getDateSearchParam(value: string | undefined): Date | undefined {
+    return value !== undefined ? new Date(value) : undefined;
+}
+
+export function pickSongDefaultOrSearchParam(params: ReadonlyURLSearchParams, defaults: SongRankingsFiltersValues, key: string): string | undefined {
+    const paramValue = params.get(key)
+    const defaultValue = defaults[key as keyof SongRankingsFiltersValues]
+    return defaultValue !== undefined ? defaultValue : paramValue !== null ? paramValue : undefined
 }
 
 export function parseParamSelectFilterValue(

@@ -171,7 +171,7 @@ export interface RankingsFilters {
 
 export interface SongRankingsFiltersValues {
     search?: string
-    timePeriod?: number
+    timePeriod?: string
     publishYear?: string
     publishMonth?: string
     publishDay?: string
@@ -181,22 +181,22 @@ export interface SongRankingsFiltersValues {
     excludeSourceTypes?: string
     excludeSongTypes?: string
     excludeArtistTypes?: string
-    includeArtistTypesMode?: number
-    excludeArtistTypesMode?: number
+    includeArtistTypesMode?: string
+    excludeArtistTypesMode?: string
     minViews?: string
     maxViews?: string
-    orderBy?: number
+    orderBy?: string
     from?: string
     timestamp?: string
-    singleVideo?: number
+    singleVideo?: string
     includeArtists?: string
     excludeArtists?: string
-    includeArtistsMode?: number
-    excludeArtistsMode?: number
-    includeSimilarArtists?: number
-    direction?: number
+    includeArtistsMode?: string
+    excludeArtistsMode?: string
+    includeSimilarArtists?: string
+    direction?: string
     startAt?: string
-    list?: number
+    list?: string
 }
 
 export interface SongRankingsFilterBarValues {

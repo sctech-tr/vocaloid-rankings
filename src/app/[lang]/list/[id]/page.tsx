@@ -60,7 +60,7 @@ export default async function ListPage(
     const mostRecentTimestamp = (await getMostRecentViewsTimestamp()) || generateTimestamp()
 
     // set the list
-    searchParams.list = listId
+    searchParams.list = String(listId)
 
     return (
         <section className="flex flex-col gap-5 w-full min-h-screen">
@@ -96,6 +96,7 @@ export default async function ListPage(
             <RankingsList
                 href=''
                 filters={songRankingsFilters}
+                defaultFilters={searchParams}
                 currentTimestamp={mostRecentTimestamp}
                 viewMode={viewMode}
             />
