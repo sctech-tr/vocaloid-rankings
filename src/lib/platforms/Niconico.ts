@@ -41,15 +41,19 @@ function getThumbnailsFallback(
         .then(text => {
             const parsedHTML = parseHTML(text)
             // parse data-api-data
+            const metaElement = parsedHTML.document.querySelector('meta[name="thumbnail"]')
             const dataElement = parsedHTML.document.getElementById("js-initial-watch-data")
-            if (!dataElement) { return null }
+            
+            if (!dataElement) return null;
 
-            const videoData = JSON.parse(dataElement.getAttribute("data-api-data") || '[]')?.video
+            const videoData = JSON.parse(dataElement?.getAttribute("data-api-data") || '[]')?.video
 
             const thumbnail = videoData?.thumbnail?.url
+            const qualityThumbnail = metaElement?.getAttribute('content')
+
             return thumbnail == undefined ? null : {
                 default: thumbnail,
-                quality: thumbnail
+                quality: qualityThumbnail || thumbnail
             }
         })
         .catch(_ => { return null })
@@ -81,7 +85,7 @@ class NiconicoPlatform implements Platform {
             const defaultThumbnail = thumbnails['listingUrl']
             return {
                 default: defaultThumbnail,
-                quality: thumbnails['largeUrl'] || defaultThumbnail
+                quality: thumbnails['nHdUrl'] || thumbnails['largeUrl'] || defaultThumbnail
             }
         })
         .catch(_ => { return getThumbnailsFallback(videoId) })
