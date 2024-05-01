@@ -22,7 +22,7 @@ import { TransitionGroup } from "react-transition-group"
 import { useSettings } from "../../../components/providers/settings-provider"
 import { SongRankingsFilterBar } from "./song-rankings-filter-bar"
 import { EntityNames, FilterType, InputFilter, RankingsFilters, RankingsViewMode, SongRankingsFilterBarValues, SongRankingsFiltersValues } from "./types"
-import { decodeBoolean, decodeMultiFilter, encodeBoolean, encodeMultiFilter, getDateSearchParam, getNumericSearchParam, getRankingsItemTrailingSupportingText, parseParamSelectFilterValue, pickSongDefaultOrSearchParam } from "./utils"
+import { buildRankingsQuery, decodeBoolean, decodeMultiFilter, encodeBoolean, encodeMultiFilter, getDateSearchParam, getNumericSearchParam, getRankingsItemTrailingSupportingText, parseParamSelectFilterValue, pickSongDefaultOrSearchParam } from "./utils"
 import { useRouter, useSearchParams } from "next/navigation"
 
 const GET_ARTISTS_NAMES = `
@@ -157,31 +157,7 @@ export function RankingsList(
         // set url
         if (refresh) {
             if (setParams) {
-                const queryBuilder = []
-                for (const key in filterBarValues) {
-                    const value = filterBarValues[key as keyof typeof filterBarValues]
-                    const filter = filters[key as keyof typeof filters]
-                    if (value != undefined && filter) {
-                        switch (filter.type) {
-                            case FilterType.SELECT:
-                            case FilterType.INPUT:
-                                if (value != (filter as InputFilter).defaultValue) queryBuilder.push(`${key}=${value}`)
-                                break
-                            case FilterType.CHECKBOX:
-                                if (value) queryBuilder.push(`${key}=${encodeBoolean(value as boolean)}`)
-                                break
-                            case FilterType.MULTI_ENTITY:
-                            case FilterType.MULTI:
-                                const encoded = encodeMultiFilter(value as number[])
-                                if (encoded != '') queryBuilder.push(`${key}=${encoded}`)
-                                break
-                            case FilterType.TIMESTAMP:
-                                queryBuilder.push(`${key}=${(value as Date).toISOString()}`)
-                                break
-                        }
-                    }
-                }
-                history.pushState({}, 'Song rankings filter changed.', `${href}?${queryBuilder.join('&')}`)
+                history.pushState({}, 'Song rankings filter changed.', `${href}?${buildRankingsQuery(filterBarValues, filters)}`)
             }
             setQueryVariables(getQueryVariables())
         }

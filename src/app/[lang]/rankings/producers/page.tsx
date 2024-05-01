@@ -281,13 +281,11 @@ export async function generateMetadata(
 
 export default async function RankingsPage(
     {
-        params,
-        searchParams
+        params
     }: {
         params: {
             lang: Locale
-        },
-        searchParams: ArtistRankingsFiltersValues
+        }
     }
 ) {
     // import language dictionary
@@ -308,7 +306,7 @@ export default async function RankingsPage(
             <ArtistRankingsList
                 href=''
                 filters={filters}
-                filterValues={searchParams}
+                defaultFilters={{}}
                 currentTimestamp={mostRecentTimestamp}
                 viewMode={viewMode}
                 category={ArtistCategory.PRODUCER}

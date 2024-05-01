@@ -20,21 +20,22 @@ import { useEffect, useState } from "react"
 import { TransitionGroup } from "react-transition-group"
 import { useSettings } from "../../../components/providers/settings-provider"
 import { TrendingActiveFilterBar } from "./trending-filter-bar"
-import { ArtistRankingsFilterBarValues, EntityNames, FilterType, InputFilter, RankingsViewMode, TrendingFilterBarValues, TrendingFilters, TrendingFiltersValues } from "./types"
-import { decodeMultiFilter, encodeBoolean, encodeMultiFilter, getRankingsItemTrailingSupportingText, parseParamSelectFilterValue } from "./utils"
+import { ArtistRankingsFilterBarValues, EntityNames, FilterType, InputFilter, RankingsViewMode, SongRankingsFilterBarValues, TrendingFilterBarValues, TrendingFilters, TrendingFiltersValues } from "./types"
+import { buildRankingsQuery, decodeMultiFilter, encodeBoolean, encodeMultiFilter, getDateSearchParam, getNumericSearchParam, getRankingsItemTrailingSupportingText, parseParamSelectFilterValue, pickSongDefaultOrSearchParam } from "./utils"
 import { SongArtistsLabel } from "@/components/formatters/song-artists-label"
+import { useSearchParams } from "next/navigation"
 
 export function TrendingRankingsList(
     {
         href,
         filters,
-        filterValues,
+        defaultFilters,
         currentTimestamp,
         viewMode,
     }: {
         href: string
         filters: TrendingFilters
-        filterValues: TrendingFiltersValues
+        defaultFilters: TrendingFiltersValues
         currentTimestamp: string
         viewMode: RankingsViewMode
     }
@@ -48,19 +49,15 @@ export function TrendingRankingsList(
     const settingTitleLanguage = settings.titleLanguage
     const [rankingsViewMode, setViewMode] = useState(viewMode)
 
+    // import search params
+    const searchParams = useSearchParams()
+
     // convert current timestamp to date
     const currentTimestampDate = new Date(currentTimestamp)
 
     // convert filterValues into filterBarValues
-    let [filterBarValues, setFilterValues] = useState({
-        timePeriod: filterValues.timePeriod,
-        from: filterValues.from ? new Date(filterValues.from) : undefined,
-        timestamp: filterValues.timestamp ? new Date(filterValues.timestamp) : undefined,
-        direction: filterValues.direction,
-        startAt: filterValues.startAt,
-        includeSourceTypes: decodeMultiFilter(filterValues.includeSourceTypes),
-        excludeSourceTypes: decodeMultiFilter(filterValues.excludeSourceTypes),
-    } as ArtistRankingsFilterBarValues)
+    let [filterBarValues, setFilterValues] = useState<SongRankingsFilterBarValues>({})
+    let [filterBarValuesLoaded, setFilterBarValuesLoaded] = useState(false)
 
     // returns a table of query variables for querying GraphQL with.
     const getQueryVariables = () => {
@@ -99,43 +96,37 @@ export function TrendingRankingsList(
     const rankingsResult = data?.songRankings as ApiSongRankingsFilterResult | undefined
 
     // function for saving filter values & updating the UI with the new values.
+    // function for saving filter values & updating the UI with the new values.
     function saveFilterValues(
         newValues: TrendingFilterBarValues,
         refresh: boolean = true,
-        merge: boolean = true
+        merge: boolean = true,
+        setParams: boolean = true
     ) {
         filterBarValues = merge ? { ...newValues } : newValues
         setFilterValues(filterBarValues)
         // set url
         if (refresh) {
-            const queryBuilder = []
-            for (const key in filterBarValues) {
-                const value = filterBarValues[key as keyof typeof filterBarValues]
-                const filter = filters[key as keyof typeof filters]
-                if (value != undefined && filter) {
-                    switch (filter.type) {
-                        case FilterType.SELECT:
-                        case FilterType.INPUT:
-                            if (value != (filter as InputFilter).defaultValue) queryBuilder.push(`${key}=${value}`)
-                            break
-                        case FilterType.CHECKBOX:
-                            if (value) queryBuilder.push(`${key}=${encodeBoolean(value as boolean)}`)
-                            break
-                        case FilterType.MULTI_ENTITY:
-                        case FilterType.MULTI:
-                            const encoded = encodeMultiFilter(value as number[])
-                            if (encoded != '') queryBuilder.push(`${key}=${encoded}`)
-                            break
-                        case FilterType.TIMESTAMP:
-                            queryBuilder.push(`${key}=${(value as Date).toISOString()}`)
-                            break
-                    }
-                }
+            if (setParams) {
+                history.pushState({}, 'Song rankings filter changed.', `${href}?${buildRankingsQuery(filterBarValues, filters)}`)
             }
-            history.pushState({}, 'Song rankings filter changed.', `${href}?${queryBuilder.join('&')}`)
             setQueryVariables(getQueryVariables())
         }
     }
+
+    // load search parameters
+    useEffect(() => {
+        setFilterBarValuesLoaded(true)
+        saveFilterValues({
+            timePeriod: getNumericSearchParam(pickSongDefaultOrSearchParam(searchParams, defaultFilters, 'timePeriod')),
+            includeSourceTypes: decodeMultiFilter(pickSongDefaultOrSearchParam(searchParams, defaultFilters, 'includeSourceTypes')),
+            excludeSourceTypes: decodeMultiFilter(pickSongDefaultOrSearchParam(searchParams, defaultFilters, 'excludeSourceTypes')),
+            from: getDateSearchParam(pickSongDefaultOrSearchParam(searchParams, defaultFilters, 'from')),
+            timestamp: getDateSearchParam(pickSongDefaultOrSearchParam(searchParams, defaultFilters, 'timestamp')),
+            direction: getNumericSearchParam(pickSongDefaultOrSearchParam(searchParams, defaultFilters, 'direction')),
+            startAt: pickSongDefaultOrSearchParam(searchParams, defaultFilters, 'startAt'),
+        }, true, true, false)
+    }, [])
 
     // load view mode
     useEffect(() => {

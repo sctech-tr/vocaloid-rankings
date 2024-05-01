@@ -1,5 +1,5 @@
 import { FilterOrder } from "@/data/types"
-import { SelectFilterValue, SongRankingsFiltersValues } from "./types"
+import { ArtistRankingsFilterBarValues, ArtistRankingsFilters, ArtistRankingsFiltersValues, FilterType, InputFilter, RankingsFilters, SelectFilterValue, SongRankingsFilterBarValues, SongRankingsFiltersValues, TrendingFilterBarValues, TrendingFilters } from "./types"
 import { RankingsItemTrailingMode } from "@/components/rankings/rankings-item-trailing"
 import { ReadonlyURLSearchParams } from "next/navigation"
 
@@ -70,6 +70,11 @@ export function pickSongDefaultOrSearchParam(params: ReadonlyURLSearchParams, de
     const defaultValue = defaults[key as keyof SongRankingsFiltersValues]
     return defaultValue !== undefined ? defaultValue : paramValue !== null ? paramValue : undefined
 }
+export function pickArtistDefaultOrSearchParam(params: ReadonlyURLSearchParams, defaults: ArtistRankingsFiltersValues, key: string): string | undefined {
+    const paramValue = params.get(key)
+    const defaultValue = defaults[key as keyof ArtistRankingsFiltersValues]
+    return defaultValue !== undefined ? defaultValue : paramValue !== null ? paramValue : undefined
+}
 
 export function parseParamSelectFilterValue(
     paramValue: number | undefined,
@@ -100,4 +105,36 @@ export function getRankingsItemTrailingSupportingText(
         default:
             return undefined
     }
+}
+
+export function buildRankingsQuery(
+    filterBarValues: SongRankingsFilterBarValues | ArtistRankingsFilterBarValues,
+    filters: RankingsFilters | ArtistRankingsFilters | TrendingFilters
+): string {
+    const queryBuilder = []
+    for (const key in filterBarValues) {
+        const value = filterBarValues[key as keyof typeof filterBarValues]
+        const filter = filters[key as keyof typeof filters]
+        if (value != undefined && filter) {
+            switch (filter.type) {
+                case FilterType.SELECT:
+                case FilterType.INPUT:
+                    if (value != (filter as InputFilter).defaultValue) queryBuilder.push(`${key}=${value}`)
+                    break
+                case FilterType.CHECKBOX:
+                    if (value) queryBuilder.push(`${key}=${encodeBoolean(value as boolean)}`)
+                    break
+                case FilterType.MULTI_ENTITY:
+                case FilterType.MULTI:
+                    const encoded = encodeMultiFilter(value as number[])
+                    if (encoded != '') queryBuilder.push(`${key}=${encoded}`)
+                    break
+                case FilterType.TIMESTAMP:
+                    queryBuilder.push(`${key}=${(value as Date).toISOString()}`)
+                    break
+            }
+        }
+    }
+
+    return queryBuilder.join('&')
 }

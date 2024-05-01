@@ -124,7 +124,7 @@ export default async function RankingsPage(
             <TrendingRankingsList
                 href=''
                 filters={filters}
-                filterValues={searchParams}
+                defaultFilters={{}}
                 currentTimestamp={mostRecentTimestamp}
                 viewMode={viewMode}
             />

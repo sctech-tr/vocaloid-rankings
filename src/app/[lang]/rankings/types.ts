@@ -262,7 +262,7 @@ export interface ArtistRankingsFilters {
 
 export interface ArtistRankingsFiltersValues {
     search?: string
-    timePeriod?: number
+    timePeriod?: string
     songPublishYear?: string
     songPublishMonth?: string
     songPublishDay?: string
@@ -277,15 +277,15 @@ export interface ArtistRankingsFiltersValues {
     excludeArtistTypes?: string
     minViews?: string
     maxViews?: string
-    orderBy?: number
+    orderBy?: string
     from?: string
     timestamp?: string
-    singleVideo?: number
+    singleVideo?: string
     includeArtists?: string
     excludeArtists?: string
     includeCoArtistsOf?: string
-    combineSimilarArtists?: number
-    direction?: number
+    combineSimilarArtists?: string
+    direction?: string
     startAt?: string
 }
 
@@ -329,10 +329,10 @@ export interface TrendingFilters {
 }
 
 export interface TrendingFiltersValues {
-    timePeriod?: number
+    timePeriod?: string
     from?: string
     timestamp?: string
-    direction?: number
+    direction?: string
     startAt?: string
     includeSourceTypes?: string
     excludeSourceTypes?: string
