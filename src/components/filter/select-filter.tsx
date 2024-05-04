@@ -7,10 +7,10 @@ import { Icon } from "../material/icon"
 
 export function SelectFilterElement(
     {
-        name,
         value,
         defaultValue,
         options,
+        name,
         searchable = false,
         minimal = false,
         icon = 'unfold_more',
@@ -19,10 +19,10 @@ export function SelectFilterElement(
         modalElevation = Elevation.NORMAL,
         onValueChanged
     }: {
-        name: string
         value: number
         defaultValue: number
         options: string[]
+        name?: string
         searchable?: boolean
         minimal?: boolean
         icon?: string
@@ -88,7 +88,7 @@ export function SelectFilterElement(
                         className={`cursor-text bg-transparent outline-none text-left flex-1 pr-3 ${valueIsDefault ? 'text-on-surface placeholder:text-on-surface-variant' : 'text-primary placeholder:text-primary font-semibold'} ${minimal ? 'w-fit' : 'w-32'}`}
                     />
                     : <h3
-                        className={`bg-transparent outline-none cursor-pointer text-left w-fit flex gap-2 overflow-hidden flex-1 pr-3 ${valueIsDefault ? 'text-on-surface-variant' : `text-primary font-semibold`}`}
+                        className={`bg-transparent whitespace-nowrap outline-none cursor-pointer text-left w-fit flex gap-2 overflow-hidden flex-1 pr-3 ${valueIsDefault ? 'text-on-surface-variant' : `text-primary font-semibold`}`}
                     >
                         {valueName}
                     </h3>

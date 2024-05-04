@@ -1,6 +1,7 @@
 import Link from "next/link"
 import { MouseEventHandler } from "react"
 import { Icon } from "./icon"
+import { CircularProgress } from "./circular-progress"
 
 export function FilledButton(
     {

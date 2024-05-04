@@ -5,7 +5,7 @@ export function FullFilterElement(
         children,
         className = ''
     }: {
-        name: string,
+        name?: string,
         nameTrailing?: React.ReactNode
         children?: React.ReactNode
         shrink?: boolean
@@ -14,10 +14,10 @@ export function FullFilterElement(
 ) {
     return (
         <li key={name} className={`h-fit flex flex-col font-bold ${className}`}>
-            <div className="flex gap-3 justify-end items-end mb-2">
+            {name || nameTrailing ? <div className="flex gap-3 justify-end items-end mb-2">
                 <h3 className="text-on-surface-variant text-lg flex-1">{name}</h3>
                 {nameTrailing}
-            </div>
+            </div> : undefined}
             {children}
         </li>
     )

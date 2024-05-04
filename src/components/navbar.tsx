@@ -1,13 +1,11 @@
 'use client'
 import Link from "next/link"
-import Image from "next/image"
 import { usePathname } from 'next/navigation'
 import { MouseEventHandler, useState } from 'react'
 import { Icon } from './material/icon'
 import { IconButton } from "./material/icon-button"
 import { useLocale } from './providers/language-dictionary-provider'
 import { ModalDrawer } from './transitions/modal-drawer'
-import icon from '../../public/icon.svg'
 import { Logo } from "./logo"
 
 export default function Navbar(
@@ -43,7 +41,7 @@ export default function Navbar(
             icon: 'music_note',
             href: `/${lang}/rankings/producers`,
             text: langDict.nav_producers
-        },
+        }
     ]
 
     return (

@@ -9,7 +9,7 @@ export function FilterElement(
         children,
         className = ''
     }: {
-        name: string,
+        name?: string,
         nameTrailing?: React.ReactNode
         minimal?: boolean
         children?: React.ReactNode
