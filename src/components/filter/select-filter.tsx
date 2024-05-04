@@ -17,6 +17,7 @@ export function SelectFilterElement(
         clearIcon = 'close',
         elevation = Elevation.LOW,
         modalElevation = Elevation.NORMAL,
+        className = '',
         onValueChanged
     }: {
         value: number
@@ -29,6 +30,7 @@ export function SelectFilterElement(
         clearIcon?: string
         elevation?: Elevation
         modalElevation?: Elevation
+        className?: string
         onValueChanged?: (newValue: number) => void
     }
 ) {
@@ -65,6 +67,7 @@ export function SelectFilterElement(
             key={name}
             name={name}
             minimal={minimal}
+            className={className}
         >
             <div
                 ref={filterRef}

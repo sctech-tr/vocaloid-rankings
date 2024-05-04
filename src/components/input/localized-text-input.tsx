@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { MouseEvent, useState } from "react";
 import { InputFilterElement } from "../filter/input-filter";
 import { SelectFilterElement } from "../filter/select-filter";
 import { FilledTonalIconButton } from "../material/filled-tonal-icon-button";
@@ -7,6 +7,7 @@ import { useLocale } from "../providers/language-dictionary-provider";
 import { Locale } from "@/localization";
 import { ListLocalizations } from "@/data/types";
 import { IconButton } from "../material/icon-button";
+import { FilledTonalButton } from "../material/filled-tonal-button";
 
 export function LocalizedTextInput(
     {
@@ -32,6 +33,22 @@ export function LocalizedTextInput(
     // generate language options
     const languageLocalizedOptions: string[] = []
     const languageOptions: Locale[] = []
+
+    // functions
+    const addLocalizedValue = (event: MouseEvent) => {
+        // prevent the click form submitting the form
+        event.preventDefault()
+
+        // do not submit if nameTextInputValue is empty
+        if (textInputValue === '') return;
+
+        // set the value in the list values dictionary
+        onValueChanged(languageOptions[languageOption], textInputValue)
+
+        // reset values
+        setTextInputValue('')
+        setLanguageOption(0)
+    }
 
     // generate elements
     const localizedTextElements: React.ReactNode[] = []
@@ -79,7 +96,7 @@ export function LocalizedTextInput(
             <h2 className="font-semibold text-3xl">{title}</h2>
 
             {/* creator */}
-            <header className="flex gap-3 p-3 bg-surface-container-lowest rounded-3xl">
+            <header className="flex md:flex-row flex-col items-end gap-3 p-3 bg-surface-container-lowest rounded-3xl">
                 <InputFilterElement
                     type='text'
                     value={textInputValue}
@@ -92,31 +109,26 @@ export function LocalizedTextInput(
                     value={languageOption}
                     defaultValue={0}
                     options={languageLocalizedOptions}
+                    className="md:w-fit w-full"
                     onValueChanged={(newValue) => setLanguageOption(newValue)}
                 />
                 <FilledTonalIconButton
                     icon='add'
-                    onClick={event => {
-                        // prevent the click form submitting the form
-                        event.preventDefault()
-
-                        // do not submit if nameTextInputValue is empty
-                        if (textInputValue === '') return;
-
-                        // set the value in the list values dictionary
-                        onValueChanged(languageOptions[languageOption], textInputValue)
-
-                        // reset values
-                        setTextInputValue('')
-                        setLanguageOption(0)
-                    }}
+                    className="md:flex hidden"
+                    onClick={event => addLocalizedValue(event)}
+                />
+                <FilledTonalButton
+                    icon='add'
+                    text={'Add'}
+                    className="md:hidden flex"
+                    onClick={event => addLocalizedValue(event)}
                 />
             </header>
 
             {/* Elements */}
             {localizedTextElements.length > 0
                 ? <table className="table-cell"><tbody>{localizedTextElements}</tbody></table>
-                : <p className="text-normal text-error text-lg text-center">{emptyText}</p>
+                : <p className="text-lg text-center">{emptyText}</p>
             }
         </section>
     )
