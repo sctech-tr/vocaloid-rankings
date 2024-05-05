@@ -7,7 +7,7 @@ class YouTubePlatform implements Platform {
     getViews(
         videoId: VideoId
     ): Promise<number | null> {
-        let start = new Date()
+        //let start = new Date()
 
         // return Innertube.create({
         //     retrieve_player: false

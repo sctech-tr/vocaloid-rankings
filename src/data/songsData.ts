@@ -2640,7 +2640,10 @@ export async function getSongMostRecentViews(
                     if (views === null) {
                         views = fallbackMap[videoId] || 0
                         didFallback = true;
-                    }
+                    } else if (fallbackMap[videoId] !== undefined && fallbackMap[videoId] > views) {
+                        views = fallbackMap[videoId]
+                        didFallback = true;
+                    } 
                     bucket.push({ id: videoId, views: views });
                     totalViews += views;
                 }
