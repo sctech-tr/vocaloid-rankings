@@ -1,4 +1,3 @@
-import Innertube from "youtubei.js/agnostic";
 import { defaultFetchHeaders } from ".";
 import { Platform, VideoId, VideoThumbnails } from "./types";
 
