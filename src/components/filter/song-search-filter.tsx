@@ -1,6 +1,6 @@
 import { EntityNames } from "@/app/[lang]/rankings/types"
 import { useSettings } from "@/components/providers/settings-provider"
-import { FilterInclusionMode, Id } from "@/data/types"
+import { Id } from "@/data/types"
 import { buildEntityNames, graphClient } from "@/lib/api"
 import { ApiSong } from "@/lib/api/types"
 import { timeoutDebounce } from "@/lib/utils"
@@ -8,10 +8,9 @@ import { getEntityName } from "@/localization"
 import { APIError, GraphQLResponseError, Result } from "graphql-hooks"
 import { useEffect, useRef, useState } from "react"
 import { Elevation, ImageDisplayMode, elevationToClass } from ".."
-import { useLocale } from "../providers/language-dictionary-provider"
+import EntityThumbnail from "../entity-thumbnail"
 import { FadeInOut } from "../transitions/fade-in-out"
 import { FilterElement } from "./filter"
-import EntityThumbnail from "../entity-thumbnail"
 
 const SONGS_SEARCH = `
 query SongsSearch(
@@ -44,9 +43,8 @@ export function SongSearchFilter(
         entityNames,
         elevation = Elevation.LOW,
         modalElevation = Elevation.NORMAL,
-        onValueChanged,
-        onEntityNamesChanged,
-        onInclusionModeChanged,
+        onSongSelected,
+        onEntityNamesChanged
     }: {
         name: string
         value: Id[]
@@ -54,13 +52,10 @@ export function SongSearchFilter(
         entityNames: EntityNames
         elevation?: Elevation
         modalElevation?: Elevation
-        onValueChanged?: (newValue: Id[]) => void
+        onSongSelected?: (songId: Id, songData: ApiSong) => void
         onEntityNamesChanged?: (newValue: EntityNames) => void
-        onInclusionModeChanged?: (newValue?: FilterInclusionMode) => void
     }
 ) {
-    // get langDict
-    const langDict = useLocale()
 
     // react states
     const [modalOpen, setModalOpen] = useState(false)
@@ -84,10 +79,9 @@ export function SongSearchFilter(
     // import settings
     const settingTitleLanguage = settings.titleLanguage
 
-    function addSong(newSongId: Id) {
-        value.push(newSongId)
-        if (onValueChanged) {
-            onValueChanged(value)
+    function addSong(newSongId: Id, songData: ApiSong) {
+        if (onSongSelected) {
+            onSongSelected(newSongId, songData)
         }
     }
 
@@ -170,7 +164,7 @@ export function SongSearchFilter(
                                             key={id}
                                             onClick={(e) => {
                                                 e.preventDefault()
-                                                addSong(id)
+                                                addSong(id, result)
                                                 // add name to names
                                                 entityNames[id] = name
                                                 if (onEntityNamesChanged) onEntityNamesChanged(entityNames);
@@ -180,18 +174,17 @@ export function SongSearchFilter(
                                             className="w-full font-normal flex gap-3 items-center h-auto text-left overflow-clip text-ellipsis p-2 rounded-full relative transition-colors hover:bg-surface-container-highest"
                                         >
                                             <EntityThumbnail
-                                                    src={result.thumbnail}
-                                                    alt={name}
-                                                    width={25}
-                                                    height={25}
-                                                    imageDisplayMode={ImageDisplayMode.SONG}
-                                                    fillColor={result.averageColor}
-                                                />
+                                                src={result.thumbnail}
+                                                alt={name}
+                                                width={25}
+                                                height={25}
+                                                imageDisplayMode={ImageDisplayMode.SONG}
+                                                fillColor={result.averageColor}
+                                            />
                                             {name}
                                         </button>
                                     )
                                 })
-
                         }
                     </ul>
                 </div>

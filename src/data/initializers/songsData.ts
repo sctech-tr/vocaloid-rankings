@@ -111,7 +111,7 @@ export default function init(
         id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
         created TEXT NOT NULL,
         last_updated TEXT NOT NULL,
-        image TEXT
+        image TEXT NOT NULL
     )`).run()
 
     // create lists localization table

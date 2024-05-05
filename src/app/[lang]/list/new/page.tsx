@@ -4,7 +4,7 @@ import { getActiveSession, getAuthenticatedUser } from "@/lib/auth";
 import { Locale, getDictionary } from "@/localization";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
-import { ListEditor } from "../list-editor-v2";
+import { ListEditor } from "../list-editor";
 import { CircularProgress } from "@/components/material/circular-progress";
 
 export default async function NewListPage(
@@ -21,13 +21,7 @@ export default async function NewListPage(
 
     if (!user || UserAccessLevel.EDITOR > user.accessLevel) return redirect('./')
 
-    // get language dictionary
-    const langDict = await getDictionary(params.lang)
-
     return (
-        <>
-            <ListEditor />
-        </>
+        <ListEditor />
     )
-
 }

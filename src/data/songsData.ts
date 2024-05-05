@@ -2116,7 +2116,7 @@ function searchSongsSync(
         SELECT DISTINCT id
         FROM songs
         INNER JOIN songs_names ON songs_names.song_id = id
-        WHERE (lower(songs_names.name) LIKE :query)${excludeExcludeStatement}
+        WHERE ((lower(songs_names.name) LIKE :query) OR (id LIKE :query))${excludeExcludeStatement}
         LIMIT :maxEntries
         OFFSET :startAt
     `).all(params.params) as { id: number }[]

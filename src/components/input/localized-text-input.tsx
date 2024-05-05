@@ -128,7 +128,7 @@ export function LocalizedTextInput(
             {/* Elements */}
             {localizedTextElements.length > 0
                 ? <table className="table-cell"><tbody>{localizedTextElements}</tbody></table>
-                : <p className="text-lg text-center">{emptyText}</p>
+                : <p className="text-xl text-center">{emptyText}</p>
             }
         </section>
     )

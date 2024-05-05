@@ -3,9 +3,10 @@
 import { insertList } from "@/data/songsData"
 import { Id, UserAccessLevel } from "@/data/types"
 import { getAuthenticatedUser } from "@/lib/auth"
-import { LanguageDictionaryKey } from "@/localization"
+import { LanguageDictionaryKey, Locale } from "@/localization"
 import { cookies } from "next/headers"
 import { ListValues } from "../[lang]/list/list-editor"
+import { LangLocaleTokens } from "@/localization/DictionaryTokenMaps"
 
 export interface InsertListActionResponse {
     error?: LanguageDictionaryKey | string,
@@ -19,7 +20,24 @@ export async function insertListAction(
         
         const user = await getAuthenticatedUser(cookies())
 
-        if (!user || UserAccessLevel.EDITOR > user.accessLevel) throw new Error('Unauthorized')
+        if (!user || UserAccessLevel.EDITOR > user.accessLevel) throw new Error('Unauthorized');
+
+        // validate that image was provided
+        if (listValues.image === null) throw new Error('list_error_missing_image');
+
+        // validate that at least one name/description was provided
+        let nameFound = false
+        let descriptionFound = false
+
+        for (const locale in LangLocaleTokens) {
+            const name = listValues.names[locale as Locale]
+            const desc = listValues.descriptions[locale as Locale]
+
+            nameFound = !nameFound ? name !== undefined : nameFound
+            descriptionFound = !descriptionFound ? desc !== undefined : descriptionFound
+        }
+        if (!nameFound) throw new Error('list_names_required');
+        if (!descriptionFound) throw new Error('list_descriptions_required');
 
         const newList = await insertList({
             created: new Date(),
