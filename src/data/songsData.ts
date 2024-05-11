@@ -2354,7 +2354,8 @@ function buildList(
         songIds: songIds,
         names: localizations[ListLocalizationType.NAME],
         descriptions: localizations[ListLocalizationType.DESCRIPTION],
-        image: rawList.image
+        image: rawList.image,
+        averageColor: rawList.average_color
     }
 }
 
@@ -2363,7 +2364,7 @@ function getListSync(
 ): List | null {
 
     const rawListData = db.prepare(`
-    SELECT id, created, last_updated, image
+    SELECT id, created, last_updated, image, average_color
     FROM lists
     WHERE id = ?`).get(id) as RawList | null
 
@@ -2438,12 +2439,13 @@ function insertListSync(
 
         // insert into the lists table
         const runResult = db.prepare(`
-        INSERT INTO lists (created, last_updated, image)
-        VALUES (?, ?, ?)
+        INSERT INTO lists (created, last_updated, image, average_color)
+        VALUES (?, ?, ?, ?)
         `).run(
             list.created.toISOString(),
             list.lastUpdated.toISOString(),
-            list.image
+            list.image,
+            list.averageColor
         )
 
         listId = runResult.lastInsertRowid
@@ -2484,7 +2486,8 @@ function updateListSync(
         id: 'id',
         created: 'created',
         lastUpdated: 'last_updated',
-        image: 'image'
+        image: 'image',
+        averageColor: 'average_color'
     }
 
     const sets: string[] = []

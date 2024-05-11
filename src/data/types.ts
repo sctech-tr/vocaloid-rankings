@@ -492,7 +492,8 @@ export interface RawList {
     id: number,
     created: string,
     last_updated: string,
-    image?: string
+    image: string
+    average_color: string
 }
 
 export interface RawListLocalization {
@@ -510,11 +511,12 @@ export interface RawListSong {
 export type ListLocalizations = { [key in Locale]?: string }
 
 export interface List {
-    id: Id,
-    created: Date,
-    lastUpdated: Date,
-    songIds: Id[],
-    names: ListLocalizations,
-    descriptions: ListLocalizations,
-    image?: string | null
+    id: Id
+    created: Date
+    lastUpdated: Date
+    songIds: Id[]
+    names: ListLocalizations
+    descriptions: ListLocalizations
+    averageColor: string
+    image: string
 }

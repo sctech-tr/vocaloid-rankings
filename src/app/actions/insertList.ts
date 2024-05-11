@@ -7,6 +7,9 @@ import { LanguageDictionaryKey, Locale } from "@/localization"
 import { cookies } from "next/headers"
 import { ListValues } from "../[lang]/list/list-editor"
 import { LangLocaleTokens } from "@/localization/DictionaryTokenMaps"
+import { getImageMostVibrantColor } from "@/lib/material/material"
+import { argbFromRgb, hexFromArgb } from "@material/material-color-utilities"
+import { Palette } from "color-thief-node"
 
 export interface InsertListActionResponse {
     error?: LanguageDictionaryKey | string,
@@ -39,13 +42,18 @@ export async function insertListAction(
         if (!nameFound) throw new Error('list_names_required');
         if (!descriptionFound) throw new Error('list_descriptions_required');
 
+        // get average color
+        const vibrantColor = await getImageMostVibrantColor(listValues.image)
+            .catch(_ => [255, 255, 255] as Palette)
+
         const newList = await insertList({
             created: new Date(),
             lastUpdated: new Date(),
             songIds: listValues.songIds,
             names: listValues.names,
             descriptions: listValues.descriptions,
-            image: listValues.image
+            image: listValues.image,
+            averageColor: hexFromArgb(argbFromRgb(...vibrantColor)) // convert the palette returned by getImageMostVibrantColor into hex.
         })
 
         return {

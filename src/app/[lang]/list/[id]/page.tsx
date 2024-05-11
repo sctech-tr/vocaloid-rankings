@@ -33,19 +33,14 @@ export default async function ListPage(
     const list = !isNaN(listId) ? await getList(listId) : null
     if (!list) return notFound()
 
-    // CHANGE COLOR BASED ON IMAGE AVERAGE COLOR?
-    const vibrantColor = list.image ? await getImageMostVibrantColor(list.image) : null
-
     // generate custom theme
     let customThemeLightCss: string = ''
     let customThemeDarkCss: string = ''
-    if (vibrantColor) {
-        const argbAverageColor = argbFromRgb(vibrantColor[0], vibrantColor[1], vibrantColor[2])
-        // dynamic theme config
-        const contrast = 0.3
-        customThemeLightCss = getCustomThemeStylesheet(new SchemeVibrant(Hct.fromInt(argbAverageColor), false, contrast)).join('')
-        customThemeDarkCss = getCustomThemeStylesheet(new SchemeVibrant(Hct.fromInt(argbAverageColor), true, contrast)).join('')
-    }
+    const argbAverageColor = argbFromHex(list.averageColor)
+    // dynamic theme config
+    const contrast = 0.3
+    customThemeLightCss = getCustomThemeStylesheet(new SchemeVibrant(Hct.fromInt(argbAverageColor), false, contrast)).join('')
+    customThemeDarkCss = getCustomThemeStylesheet(new SchemeVibrant(Hct.fromInt(argbAverageColor), true, contrast)).join('')
 
     // import language dictionary
     const lang = params.lang
