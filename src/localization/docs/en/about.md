@@ -13,7 +13,7 @@ Instead, their view counts will only be refreshed when their page is visited, a 
 
 A song will become dormant if it meets **all** of the following criteria:
 
-1. The song receives less than 1,500 views per day.
+1. The song receives less than 2,500 views per day.
 2. It was published more than one year ago.
 3. It was added to the website more than three days ago.
 

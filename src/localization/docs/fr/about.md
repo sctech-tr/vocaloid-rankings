@@ -13,7 +13,7 @@ Au lieu de cela, leur compteur de vues sera rafraîchi uniquement lors de la vis
 
 Une chanson deviendra dormante si elle répond à **tous** les critères suivants :
 
-1. La chanson reçoit moins de 1 500 vues par jour.
+1. La chanson reçoit moins de 2 500 vues par jour.
 2. Elle a été publiée il y a plus d'un an.
 3. Elle a été ajoutée au site il y a plus de trois jours.
 

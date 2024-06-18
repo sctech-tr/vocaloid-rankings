@@ -2683,7 +2683,7 @@ export async function refreshAllSongsViews(
     maxConcurrent: number = 15,
     minDormantPublishAge: number = 365 * 24 * 60 * 60 * 1000, // in milliseconds, the minimum amount of ms since song publish before it can become dormant
     minDormantAdditionAge: number = 3 * 24 * 60 * 60 * 1000, // in milliseconds, the minimum amount of ms since song addition before it can become dormant
-    minDormantViews: number = 1500 // the minimum number of daily views a song can have before it can become dormant
+    minDormantViews: number = 2500 // the minimum number of daily views a song can have before it can become dormant
 ): Promise<void> {
     if (isRefreshing) throw new Error('All songs views are already being refreshed.');
 

@@ -13,7 +13,7 @@ En su lugar, sus cuentas de visualización solo se actualizarán cuando se visit
 
 Una canción se volverá inactiva si cumple con **todos** los siguientes criterios:
 
-1. La canción recibe menos de 1,500 visualizaciones por día.
+1. La canción recibe menos de 2,500 visualizaciones por día.
 2. Fue publicada hace más de un año.
 3. Fue añadida al sitio web hace más de tres días.
 
