@@ -264,9 +264,8 @@ const parseVocaDBSongAsync = (
                         }
                         idBucket.push(pvID)
 
-                        const views = await poller.getViews(pvID)
+                        const views = (await poller.getViews(pvID)) ?? 0
                         const thumbnails = await poller.getThumbnails(pvID)
-                        if (views === null) { return reject(`No view data found for pv ${pvID}`) }
                         if (thumbnails === null) { return reject(`No thumbnails for for pv ${pvID}`) }
 
                         // add to total views

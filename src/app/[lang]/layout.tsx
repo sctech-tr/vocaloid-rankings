@@ -7,6 +7,8 @@ import { Providers } from '@/components/providers/providers'
 import { Locale, getDictionary } from '@/localization/'
 import Footer from '@/components/footer'
 import { GoogleAnalytics } from '@/components/scripts/gtag'
+import { Icon } from '@/components/material/icon'
+import Link from 'next/link'
 
 const inter = Inter({
   subsets: ['latin'],

@@ -1,15 +1,17 @@
 import { Platform, VideoId, VideoThumbnails } from "./types";
 import { defaultFetchHeaders } from ".";
-import { parseHTML } from "linkedom";
 
 const nicoNicoVideoDomain = "https://www.nicovideo.jp/watch/"
 
 const nicoNicoAPIDomain = "https://nvapi.nicovideo.jp/v1/"
 const headers = {
-    ...defaultFetchHeaders,
+    //...defaultFetchHeaders,
     'x-Frontend-Id': '6',
     'x-Frontend-version': '0'
 }
+
+const viewsRegExp = /WatchAction","userInteractionCount":(\d+)}/gm
+const thumbnailRegExp = /<meta data-server="1" property="og:image" content="(https:\/\/img\.cdn\.nimg\.jp\/s\/nicovideo\/thumbnails\/\d+\/\d+\.\d+\.original\/r1280x720l\?key=[\d\w]+)" \/>/gm
 
 async function getViewsFallback(
     videoId: VideoId
@@ -21,16 +23,9 @@ async function getViewsFallback(
 
     const text = await result.text()
 
-    const parsedHTML = parseHTML(text)
-    // parse data-api-data
-    const dataElement = parsedHTML.document.getElementById("js-initial-watch-data")
-    if (!dataElement) { return null }
+    const match = viewsRegExp.exec(text)
 
-    const videoData = JSON.parse(dataElement.getAttribute("data-api-data") || '[]')?.video
-
-    const rawViews = videoData?.count?.view
-
-    return rawViews == undefined ? null : Number.parseInt(rawViews)
+    return match === null ? null : Number.parseInt(match[1])
 }
 
 function getThumbnailsFallback(
@@ -39,21 +34,11 @@ function getThumbnailsFallback(
     return fetch(nicoNicoVideoDomain + videoId)
         .then(response => response.text())
         .then(text => {
-            const parsedHTML = parseHTML(text)
-            // parse data-api-data
-            const metaElement = parsedHTML.document.querySelector('meta[name="thumbnail"]')
-            const dataElement = parsedHTML.document.getElementById("js-initial-watch-data")
-            
-            if (!dataElement) return null;
+            const match = thumbnailRegExp.exec(text)
 
-            const videoData = JSON.parse(dataElement?.getAttribute("data-api-data") || '[]')?.video
-
-            const thumbnail = videoData?.thumbnail?.url
-            const qualityThumbnail = metaElement?.getAttribute('content')
-
-            return thumbnail == undefined ? null : {
-                default: thumbnail,
-                quality: qualityThumbnail || thumbnail
+            return match === null ? null : {
+                default: match[1],
+                quality: match[1]
             }
         })
         .catch(_ => { return null })
@@ -68,10 +53,10 @@ class NiconicoPlatform implements Platform {
         return fetch(`${nicoNicoAPIDomain}videos?watchIds=${videoId}`, {
             headers: headers
         }).then(res => res.json())
-        .then(videoData => {
-            return videoData['data']['items'][0]['video']['count']['view']
-        })
-        .catch(_ => { return getViewsFallback(videoId) })
+            .then(videoData => {
+                return videoData['data']['items'][0]['video']['count']['view']
+            })
+            .catch(_ => getViewsFallback(videoId))
     }
 
     getThumbnails(
@@ -80,15 +65,15 @@ class NiconicoPlatform implements Platform {
         return fetch(`${nicoNicoAPIDomain}videos?watchIds=${videoId}`, {
             headers: headers
         }).then(res => res.json())
-        .then(videoData => {
-            const thumbnails = videoData['data']['items'][0]['video']['thumbnail']
-            const defaultThumbnail = thumbnails['listingUrl']
-            return {
-                default: defaultThumbnail,
-                quality: thumbnails['nHdUrl'] || thumbnails['largeUrl'] || defaultThumbnail
-            }
-        })
-        .catch(_ => { return getThumbnailsFallback(videoId) })
+            .then(videoData => {
+                const thumbnails = videoData['data']['items'][0]['video']['thumbnail']
+                const defaultThumbnail = thumbnails['listingUrl']
+                return {
+                    default: defaultThumbnail,
+                    quality: thumbnails['nHdUrl'] || thumbnails['largeUrl'] || defaultThumbnail
+                }
+            })
+            .catch(_ => getThumbnailsFallback(videoId))
     }
 
 }

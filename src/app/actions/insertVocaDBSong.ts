@@ -17,7 +17,8 @@ export async function insertVocaDBSong(
         const songId = songUrl ? parseVocaDBSongId(songUrl as string) : null
         if (!songId) throw new Error('add_song_invalid_url')
 
-        if (await songExists(songId)) throw new Error('add_song_already_exists')
+        if (await songExists(songId)) throw new Error('add_song_already_exists');
+        
         await insertSong(await getVocaDBSong(songId))
 
         return {

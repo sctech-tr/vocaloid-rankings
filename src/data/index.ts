@@ -28,7 +28,7 @@ const enum Pragma {
 }
 
 const dbPragmas = {
-    [Pragma.DEFAULT]: "journal_mode = WAL"
+    [Pragma.DEFAULT]: "journal_mode = WAL, foreign_keys = ON"
 }
 
 const databaseMetadata = {

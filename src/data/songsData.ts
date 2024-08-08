@@ -1280,6 +1280,7 @@ function insertArtistSync(
     artist: Artist
 ): Artist {
     const id = artist.id
+    const baseArtistExists = artist.baseArtistId === null || artist.baseArtistId === undefined ? false : artistExistsSync(artist.baseArtistId)
 
     // insert artist
     db.prepare(`
@@ -1290,7 +1291,7 @@ function insertArtistSync(
         artist.type,
         artist.publishDate.toISOString(),
         artist.additionDate.toISOString(),
-        artist.baseArtistId,
+        baseArtistExists ? artist.baseArtistId : null,
         artist.averageColor,
         artist.darkColor,
         artist.lightColor
@@ -2680,7 +2681,7 @@ interface RefreshingSong {
 export async function refreshAllSongsViews(
     maxRetries: number = 5,
     retryDelay: number = 1000,
-    maxConcurrent: number = 15,
+    maxConcurrent: number = 5,
     minDormantPublishAge: number = 365 * 24 * 60 * 60 * 1000, // in milliseconds, the minimum amount of ms since song publish before it can become dormant
     minDormantAdditionAge: number = 3 * 24 * 60 * 60 * 1000, // in milliseconds, the minimum amount of ms since song addition before it can become dormant
     minDormantViews: number = 2500 // the minimum number of daily views a song can have before it can become dormant
@@ -2780,6 +2781,31 @@ if (process.env.NODE_ENV === 'production') {
     // refresh views
     refreshAllSongsViews().catch(error => console.log(`Error when refreshing every songs' views: ${error}`))
 }
+
+// const refreshDormant = async () => {
+//     const timeNow = new Date().getTime()
+//     const songIds = db.prepare(`SELECT id, publish_date, addition_date, dormant FROM songs`).all() as RawSongData[];
+//     let n = 0
+//     for (const rawSong of songIds) {
+//         const previousViews = getSongViewsSync(rawSong.id, "2024-05-25")
+//         const views = getSongViewsSync(rawSong.id, "2024-05-26")
+//         if (
+//             ((timeNow - new Date(rawSong.publish_date).getTime()) >= (183 * 24 * 60 * 60 * 1000))
+//             && (views && previousViews && ((Number(views.total) - Number(previousViews.total)) < 1000))
+//             && (rawSong.dormant === 0)
+//         ) {
+//             console.log(`Make "${rawSong.id}" dormant.`)
+//             updateSongSync({
+//                 id: rawSong.id,
+//                 isDormant: true
+//             })
+//             n+= 1
+//         }
+//     }
+//     console.log(`Made ${n} songs dormant.`);
+// }
+
+// refreshDormant()
 
 // insertList({
 //     created: new Date(),
