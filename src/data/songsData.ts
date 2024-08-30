@@ -1667,16 +1667,16 @@ function getSongViewsSync(
     songId: Id,
     timestamp?: string | null
 ): Views | null {
-    const recentTimestamp = getMostRecentViewsTimestampSync(timestamp)
-    if (!recentTimestamp) {
-        return buildEntityViews([])
-    }
+    const recentTimestamp = timestamp ?? getMostRecentViewsTimestampSync(timestamp)
+    if (!recentTimestamp) return buildEntityViews([]);
 
     const breakdowns = db.prepare(`
     SELECT views, video_id, view_type
     FROM views_breakdowns
     WHERE song_id = ? AND timestamp = ?
     ORDER BY views DESC`).all(songId, recentTimestamp) as RawViewBreakdown[]
+
+    if (breakdowns.length === 0) return buildEntityViews([]);
 
     return buildEntityViews(
         breakdowns,
@@ -2333,7 +2333,7 @@ function buildList(
     rawSongs: RawListSong[]
 ): List {
     // build names and descriptions
-    const localizations: ListLocalizations[]  = [
+    const localizations: ListLocalizations[] = [
         {}, // ListLocalizationType.NAME
         {}, // ListLocalizationType.DESCRIPTION
     ]
@@ -2630,10 +2630,10 @@ export async function getSongMostRecentViews(
 
             if (sourceVideoIds) {
                 const bucket = [];
-                
+
                 // generate fallback map
-                const fallbackMap: {[key: string]: number} = {};
-                if (fallbackBucket) {
+                const fallbackMap: { [key: string]: number } = {};
+                if (fallbackBucket !== undefined) {
                     for (const views of fallbackBucket) {
                         fallbackMap[views.id] = Number(views.views)
                     }
@@ -2647,7 +2647,7 @@ export async function getSongMostRecentViews(
                     } else if (fallbackMap[videoId] !== undefined && fallbackMap[videoId] > views) {
                         views = fallbackMap[videoId]
                         didFallback = true;
-                    } 
+                    }
                     bucket.push({ id: videoId, views: views });
                     totalViews += views;
                 }
@@ -2681,7 +2681,7 @@ interface RefreshingSong {
 export async function refreshAllSongsViews(
     maxRetries: number = 5,
     retryDelay: number = 1000,
-    maxConcurrent: number = 5,
+    maxConcurrent: number = 10,
     minDormantPublishAge: number = 365 * 24 * 60 * 60 * 1000, // in milliseconds, the minimum amount of ms since song publish before it can become dormant
     minDormantAdditionAge: number = 3 * 24 * 60 * 60 * 1000, // in milliseconds, the minimum amount of ms since song addition before it can become dormant
     minDormantViews: number = 2500 // the minimum number of daily views a song can have before it can become dormant
@@ -2722,31 +2722,37 @@ export async function refreshAllSongsViews(
 
         const retractAttempt = async (song: RefreshingSong, timestamp: string, depth: number): Promise<void> => {
             try {
-                const previousViews = getSongViewsSync(song.id)
-                if (!song.dormant) {
-                    const viewsResult = await getSongMostRecentViews(song.id, timestamp, previousViews || undefined);
-                    if (!viewsResult) throw new Error('Most recent views was null.');
-                    const views = viewsResult.views
+                const currentViews = getSongViewsSync(song.id, timestamp)
+                const currentViewsTimestamp = currentViews?.timestamp
+                // don't try to refresh views for this song if its views have already been refreshed for this timestamp
+                if ((currentViewsTimestamp === undefined) || currentViewsTimestamp !== timestamp) {
 
-                    insertSongViewsSync(song.id, views);
-                    console.log(`Refreshed views for (${song.id})`);
+                    const previousViews = getSongViewsSync(song.id)
+                    if (!song.dormant) {
+                        const viewsResult = await getSongMostRecentViews(song.id, timestamp, previousViews || undefined);
+                        if (!viewsResult) throw new Error('Most recent views was null.');
+                        const views = viewsResult.views
 
-                    // make song dormant if necessary
-                    if (previousViews
-                        && (!viewsResult.didFallback)
-                        && (minDormantViews >= (Number(views.total) - Number(previousViews.total)))
-                        && ((timeNow - song.publishTime) >= minDormantPublishAge)
-                        && ((timeNow - song.additionTime) >= minDormantAdditionAge)
-                    ) {
-                        console.log(`Made (${song.id}) dormant.`)
-                        updateSongSync({
-                            id: song.id,
-                            isDormant: true
-                        })
+                        insertSongViewsSync(song.id, views);
+                        console.log(`Refreshed views for (${song.id})`);
+
+                        // make song dormant if necessary
+                        if (previousViews
+                            && (!viewsResult.didFallback)
+                            && (minDormantViews >= (Number(views.total) - Number(previousViews.total)))
+                            && ((timeNow - song.publishTime) >= minDormantPublishAge)
+                            && ((timeNow - song.additionTime) >= minDormantAdditionAge)
+                        ) {
+                            console.log(`Made (${song.id}) dormant.`)
+                            updateSongSync({
+                                id: song.id,
+                                isDormant: true
+                            })
+                        }
+                    } else if (previousViews) {
+                        previousViews.timestamp = timestamp
+                        insertSongViewsSync(song.id, previousViews)
                     }
-                } else if (previousViews) {
-                    previousViews.timestamp = timestamp
-                    insertSongViewsSync(song.id, previousViews)
                 }
             } catch (error) {
                 console.log(`Error when refreshing song with id (${song.id}). Error: ${error}`);
@@ -2777,10 +2783,10 @@ export async function refreshAllSongsViews(
     }
 }
 
-if (process.env.NODE_ENV === 'production') {
-    // refresh views
-    refreshAllSongsViews().catch(error => console.log(`Error when refreshing every songs' views: ${error}`))
-}
+//if (process.env.NODE_ENV === 'production') {
+// refresh views
+refreshAllSongsViews().catch(error => console.log(`Error when refreshing every songs' views: ${error}`))
+//}
 
 // const refreshDormant = async () => {
 //     const timeNow = new Date().getTime()
