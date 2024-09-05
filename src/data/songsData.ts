@@ -2783,18 +2783,18 @@ export async function refreshAllSongsViews(
     }
 }
 
-//if (process.env.NODE_ENV === 'production') {
-// refresh views
-refreshAllSongsViews().catch(error => console.log(`Error when refreshing every songs' views: ${error}`))
-//}
+if (process.env.NODE_ENV === 'production') {
+    //refresh views
+    refreshAllSongsViews().catch(error => console.log(`Error when refreshing every songs' views: ${error}`))
+}
 
 // const refreshDormant = async () => {
 //     const timeNow = new Date().getTime()
 //     const songIds = db.prepare(`SELECT id, publish_date, addition_date, dormant FROM songs`).all() as RawSongData[];
 //     let n = 0
 //     for (const rawSong of songIds) {
-//         const previousViews = getSongViewsSync(rawSong.id, "2024-05-25")
-//         const views = getSongViewsSync(rawSong.id, "2024-05-26")
+//         const previousViews = getSongViewsSync(rawSong.id, "2024-08-26")
+//         const views = getSongViewsSync(rawSong.id, "2024-08-27")
 //         if (
 //             ((timeNow - new Date(rawSong.publish_date).getTime()) >= (183 * 24 * 60 * 60 * 1000))
 //             && (views && previousViews && ((Number(views.total) - Number(previousViews.total)) < 1000))
@@ -2805,7 +2805,7 @@ refreshAllSongsViews().catch(error => console.log(`Error when refreshing every s
 //                 id: rawSong.id,
 //                 isDormant: true
 //             })
-//             n+= 1
+//             n += 1
 //         }
 //     }
 //     console.log(`Made ${n} songs dormant.`);

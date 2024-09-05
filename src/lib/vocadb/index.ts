@@ -62,7 +62,8 @@ const artistTypeMap: { [key: string]: ArtistType } = {
     'OtherVoiceSynthesizer': ArtistType.OTHER_VOICE_SYNTHESIZER,
     'OtherIndividual': ArtistType.OTHER_INDIVIDUAL,
     'OtherGroup': ArtistType.OTHER_GROUP,
-    'UTAU': ArtistType.UTAU
+    'UTAU': ArtistType.UTAU,
+    'Voiceroid': ArtistType.VOICEROID
 }
 
 const songTypeMap: { [key: string]: SongType } = {
@@ -155,7 +156,7 @@ const parseVocaDBArtistDataAsync = (
             // resolve
             resolve({
                 id: artistData.id,
-                type: artistTypeMap[artistData.artistType],
+                type: artistTypeMap[artistData.artistType] ?? ArtistType.OTHER_VOICE_SYNTHESIZER,
                 publishDate: new Date(artistData.releaseDate || artistData.createDate),
                 additionDate: new Date(),
                 thumbnails,
@@ -212,6 +213,8 @@ const parseVocaDBSongAsync = (
                     }
                 }
             }
+
+            console.log(artists)
 
             if (0 >= vocalSynths) {
                 return reject('The provided song must have at least one vocal synthesizer as a singer.')

@@ -58,6 +58,7 @@ export function mapArtistTypeToCategory(
         case ArtistType.OTHER_VOICE_SYNTHESIZER:
         case ArtistType.UTAU:
         case ArtistType.PROJECT_SEKAI:
+        case ArtistType.VOICEROID:
             return ArtistCategory.VOCALIST
         default:
             return ArtistCategory.PRODUCER
@@ -84,7 +85,8 @@ export const artistCategoryToApiArtistTypes: {
         ArtistType[ArtistType.OTHER_VOCALIST],
         ArtistType[ArtistType.OTHER_VOICE_SYNTHESIZER],
         ArtistType[ArtistType.UTAU],
-        ArtistType[ArtistType.PROJECT_SEKAI]
+        ArtistType[ArtistType.PROJECT_SEKAI],
+        ArtistType[ArtistType.VOICEROID]
     ],
     [ArtistCategory.PRODUCER]: [
         ArtistType[ArtistType.ILLUSTRATOR],

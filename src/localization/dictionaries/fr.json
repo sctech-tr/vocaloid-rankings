@@ -64,6 +64,7 @@
     "filter_artist_type_other_group": "Autre groupe",
     "filter_artist_type_utau": "UTAU",
     "filter_artist_type_project_sekai": "Project SEKAI",
+    "filter_artist_type_voiceroid": "Voiceroid",
     "filter_publish_date": "Date de publication",
     "filter_order_by": "Trier par",
     "filter_order_by_views": "Vues",

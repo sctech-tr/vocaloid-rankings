@@ -122,6 +122,7 @@ export const songRankingsFilters: RankingsFilters = {
             { name: 'filter_artist_type_other_group', value: ArtistType.OTHER_GROUP },
             { name: 'filter_artist_type_utau', value: ArtistType.UTAU },
             { name: 'filter_artist_type_project_sekai', value: ArtistType.PROJECT_SEKAI },
+            { name: 'filter_artist_type_voiceroid', value: ArtistType.VOICEROID }
         ]
     },
     excludeArtistTypes: {
@@ -143,6 +144,7 @@ export const songRankingsFilters: RankingsFilters = {
             { name: 'filter_artist_type_other_group', value: ArtistType.OTHER_GROUP },
             { name: 'filter_artist_type_utau', value: ArtistType.UTAU },
             { name: 'filter_artist_type_project_sekai', value: ArtistType.PROJECT_SEKAI },
+            { name: 'filter_artist_type_voiceroid', value: ArtistType.VOICEROID }
         ]
     },
     includeArtistTypesMode: {

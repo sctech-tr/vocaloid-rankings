@@ -141,6 +141,7 @@ const filters: ArtistRankingsFilters = {
             { name: 'filter_artist_type_other_voice_synth', value: ArtistType.OTHER_VOICE_SYNTHESIZER },
             { name: 'filter_artist_type_utau', value: ArtistType.UTAU },
             { name: 'filter_artist_type_project_sekai', value: ArtistType.PROJECT_SEKAI },
+            { name: 'filter_artist_type_voiceroid', value: ArtistType.VOICEROID }
         ],
         defaultValue: artistCategoryToApiArtistTypes[ArtistCategory.VOCALIST]
     },
@@ -157,6 +158,7 @@ const filters: ArtistRankingsFilters = {
             { name: 'filter_artist_type_other_voice_synth', value: ArtistType.OTHER_VOICE_SYNTHESIZER },
             { name: 'filter_artist_type_utau', value: ArtistType.UTAU },
             { name: 'filter_artist_type_project_sekai', value: ArtistType.PROJECT_SEKAI },
+            { name: 'filter_artist_type_voiceroid', value: ArtistType.VOICEROID }
         ]
     },
     minViews: {

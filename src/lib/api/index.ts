@@ -263,7 +263,7 @@ export function mapSourceType(
     }
 }
 
-// enum ArtistType { VOCALOID, CEVIO, SYNTHESIZER_V, ILLUSTRATOR, COVER_ARTIST, ANIMATOR, PRODUCER, OTHER_VOCALIST, OTHER_VOICE_SYNTHESIZER, OTHER_INDIVIDUAL, OTHER_GROUP, UTAU, PROJECT_SEKAI }
+// enum ArtistType { VOCALOID, CEVIO, SYNTHESIZER_V, ILLUSTRATOR, COVER_ARTIST, ANIMATOR, PRODUCER, OTHER_VOCALIST, OTHER_VOICE_SYNTHESIZER, OTHER_INDIVIDUAL, OTHER_GROUP, UTAU, PROJECT_SEKAI, VOICEROID }
 export function mapArtistType(
     apiValue: string
 ): ArtistType {
@@ -281,6 +281,7 @@ export function mapArtistType(
         case 'OTHER_GROUP': return ArtistType.OTHER_GROUP;
         case 'UTAU': return ArtistType.UTAU;
         case 'PROJECT_SEKAI': return ArtistType.PROJECT_SEKAI;
+        case 'VOICEROID': return ArtistType.VOICEROID;
         default: return ArtistType.VOCALOID
     }
 }

@@ -393,6 +393,10 @@ const artistTypeEnum = new GraphQLEnumType({
         PROJECT_SEKAI: {
             value: 12,
             description: 'A singer from the mobile rythm game Project: Sekai Colorful Stage'
+        },
+        VOICEROID: {
+            value: 13,
+            description: 'A voicebank that uses the voiceroid software.'
         }
     }
 })
