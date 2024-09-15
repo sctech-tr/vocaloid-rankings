@@ -2696,9 +2696,26 @@ export async function refreshAllSongsViews(
         const timeNow = new Date().getTime()
         const timestamp = generateTimestamp();
         if (timestampExistsSync(timestamp)) throw new Error(`Songs views were already refreshed for timestamp "${timestamp}"`);
-
-        // get all non-dormant songs' ids
-        const songIds = db.prepare(`SELECT id, publish_date, addition_date, dormant FROM songs`).all() as RawSongData[];
+        
+        // we will be refreshing song views in the order of their views earned in the past day
+        const songIds = db.prepare(`
+        SELECT views_breakdowns.song_id as id,
+            songs.publish_date, 
+            songs.addition_date,
+            SUM(views_breakdowns.views) - ifnull((SELECT SUM(DISTINCT offset_breakdowns.views) as offset_views
+            FROM views_breakdowns AS offset_breakdowns
+            INNER JOIN songs ON offset_breakdowns.song_id = songs.id
+            WHERE (offset_breakdowns.timestamp = DATE(:timestamp, '-1 day'))
+                AND (songs.id = views_breakdowns.song_id)
+            GROUP BY offset_breakdowns.song_id), 0) as daily_views
+        FROM views_breakdowns
+        INNER JOIN songs ON views_breakdowns.song_id = songs.id
+        WHERE (views_breakdowns.timestamp = :timestamp)
+        GROUP BY views_breakdowns.song_id
+        ORDER BY daily_views DESC
+        `).all({
+            "timestamp": getMostRecentViewsTimestampSync()
+        }) as RawSongData[];
 
         const refreshingPromises: Promise<void>[] = [];
 
@@ -2783,7 +2800,7 @@ export async function refreshAllSongsViews(
     }
 }
 
-if (process.env.NODE_ENV === 'production') {
+if (process.env.NODE_ENV !== 'production') {
     //refresh views
     refreshAllSongsViews().catch(error => console.log(`Error when refreshing every songs' views: ${error}`))
 }
