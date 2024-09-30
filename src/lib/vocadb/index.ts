@@ -188,6 +188,13 @@ const parseVocaDBSongAsync = (
                 return;
             }
 
+            // check if the song type is after 2005
+            const publishDate = new Date(vocaDBSong.publishDate)
+            if (2005 > publishDate.getFullYear() && !ignoreRestrictions) {
+                reject("Song must be published after January 1st, 2005.")
+                return;
+            }
+
             // get artists
             const artists: Artist[] = []
             const artistsCategories: SongArtistsCategories = {
