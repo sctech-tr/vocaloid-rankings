@@ -176,13 +176,14 @@ const parseVocaDBArtistDataAsync = (
 }
 
 const parseVocaDBSongAsync = (
-    vocaDBSong: VocaDBSong
+    vocaDBSong: VocaDBSong,
+    ignoreRestrictions: boolean = false
 ): Promise<Song> => {
     return new Promise(async (resolve, reject) => {
         try {
             const songType = vocaDBSong.songType
             // check if the song type is blacklisted
-            if (blacklistedSongTypes[songType]) {
+            if (blacklistedSongTypes[songType] && !ignoreRestrictions) {
                 reject("Blacklisted song type.");
                 return;
             }
@@ -214,9 +215,7 @@ const parseVocaDBSongAsync = (
                 }
             }
 
-            console.log(artists)
-
-            if (0 >= vocalSynths) {
+            if (0 >= vocalSynths && !ignoreRestrictions) {
                 return reject('The provided song must have at least one vocal synthesizer as a singer.')
             }
 
@@ -366,7 +365,8 @@ export const getVocaDBArtist = (
 }
 
 export const getVocaDBSong = (
-    songId: Id | string
+    songId: Id | string,
+    ignoreRestrictions: boolean = false
 ): Promise<Song> => {
     return new Promise(async (resolve, reject) => {
         try {
@@ -376,7 +376,7 @@ export const getVocaDBSong = (
                 .catch(error => { reject(error); return })
             if (!serverResponse) { reject("No server response."); return; }
 
-            resolve(parseVocaDBSongAsync(serverResponse))
+            resolve(parseVocaDBSongAsync(serverResponse, ignoreRestrictions))
         } catch (error) {
             reject(error)
         }
