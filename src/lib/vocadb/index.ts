@@ -34,7 +34,8 @@ const vocaDBSongURLMatcher = /vocadb\.net\/S\/(\d+)/
 // tables
 const blacklistedSongTypes: { [key: string]: boolean } = {
     ["Instrumental"]: true,
-    ["MusicPV"]: true
+    ["MusicPV"]: true,
+    ["DramaPV"]: true
 }
 
 const artistCategoryMap: { [key: string]: ArtistCategory } = {
@@ -184,7 +185,7 @@ const parseVocaDBSongAsync = (
             const songType = vocaDBSong.songType
             // check if the song type is blacklisted
             if (blacklistedSongTypes[songType] && !ignoreRestrictions) {
-                reject("Blacklisted song type.");
+                reject(`Blacklisted song type: ${songType}`);
                 return;
             }
 
