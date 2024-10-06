@@ -30,7 +30,9 @@ export const SongTypeLocaleTokens: {[key in SongType]: LanguageDictionaryKey} = 
     [SongType.REMIX]: 'filter_song_type_remix',
     [SongType.COVER]: 'filter_song_type_cover',
     [SongType.OTHER]: 'filter_song_type_other',
-    [SongType.REMASTER]: 'filter_song_type_remaster'
+    [SongType.REMASTER]: 'filter_song_type_remaster',
+    [SongType.DRAMA_PV]: 'filter_song_type_drama_pv',
+    [SongType.MUSIC_PV]: 'filter_song_type_music_pv'
 }
 
 export const SourceTypeLocaleTokens: {[key in SourceType]: LanguageDictionaryKey} = {

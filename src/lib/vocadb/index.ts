@@ -33,9 +33,7 @@ const vocaDBSongURLMatcher = /vocadb\.net\/S\/(\d+)/
 
 // tables
 const blacklistedSongTypes: { [key: string]: boolean } = {
-    ["Instrumental"]: true,
-    ["MusicPV"]: true,
-    ["DramaPV"]: true
+    ["Instrumental"]: true
 }
 
 const artistCategoryMap: { [key: string]: ArtistCategory } = {
@@ -71,7 +69,9 @@ const songTypeMap: { [key: string]: SongType } = {
     'Original': SongType.ORIGINAL,
     'Cover': SongType.COVER,
     'Remix': SongType.REMIX,
-    'Remaster': SongType.REMASTER
+    'Remaster': SongType.REMASTER,
+    'DramaPV': SongType.DRAMA_PV,
+    "MusicPV": SongType.MUSIC_PV
 }
 
 // A blacklist of non-vocal-synth singers.

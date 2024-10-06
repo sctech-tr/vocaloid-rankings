@@ -47,6 +47,8 @@
     "filter_song_type_other": "その他",
     "filter_song_type_cover": "カバー",
     "filter_song_type_remaster": "",
+    "filter_song_type_drama_pv": "Drama PV",
+    "filter_song_type_music_pv": "Music PV",
     "filter_artist_type": "アーティストタイプ",
     "filter_artist_type_mode": "アーティストタイプ含有モード",
     "filter_artist_type_exclude": "アーティストタイプを除外",

@@ -20,7 +20,7 @@ import { GraphQLContext } from './types'
  * SCHEMA OVERVIEW
  * 
  * ```graphql
- * enum SongType { ORIGINAL, REMIX, COVER, OTHER, REMASTER }
+ * enum SongType { ORIGINAL, REMIX, COVER, OTHER, REMASTER, DRAMA_PV, MUSIC_PV }
  * 
  * enum SourceType { YOUTUBE, NICONICO, BILIBILI }
  * 
@@ -313,6 +313,12 @@ const songTypeEnum = new GraphQLEnumType({
         REMASTER: {
             value: 4,
             description: "A song that is a remaster of an older song."
+        },
+        DRAMA_PV: {
+            value: 5
+        },
+        MUSIC_PV: {
+            value: 6
         }
     }
 })

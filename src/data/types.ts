@@ -12,7 +12,9 @@ export enum SongType {
     REMIX,
     OTHER,
     COVER,
-    REMASTER
+    REMASTER,
+    DRAMA_PV,
+    MUSIC_PV
 }
 
 export enum SourceType {

@@ -47,6 +47,8 @@
     "filter_song_type_other": "",
     "filter_song_type_cover": "",
     "filter_song_type_remaster": "",
+    "filter_song_type_drama_pv": "",
+    "filter_song_type_music_pv": "",
     "filter_artist_type": "",
     "filter_artist_type_mode": "",
     "filter_artist_type_exclude": "",
