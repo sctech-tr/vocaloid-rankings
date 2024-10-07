@@ -2810,8 +2810,8 @@ if (process.env.NODE_ENV === 'production') {
 //     const songIds = db.prepare(`SELECT id, publish_date, addition_date, dormant FROM songs`).all() as RawSongData[];
 //     let n = 0
 //     for (const rawSong of songIds) {
-//         const previousViews = getSongViewsSync(rawSong.id, "2024-08-26")
-//         const views = getSongViewsSync(rawSong.id, "2024-08-27")
+//         const previousViews = getSongViewsSync(rawSong.id, "2024-09-14")
+//         const views = getSongViewsSync(rawSong.id, "2024-09-15")
 //         if (
 //             ((timeNow - new Date(rawSong.publish_date).getTime()) >= (183 * 24 * 60 * 60 * 1000))
 //             && (views && previousViews && ((Number(views.total) - Number(previousViews.total)) < 1000))

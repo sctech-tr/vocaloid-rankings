@@ -11,6 +11,7 @@ export function SelectFilterElement(
         defaultValue,
         options,
         name,
+        nameIcon,
         searchable = false,
         minimal = false,
         icon = 'unfold_more',
@@ -24,6 +25,7 @@ export function SelectFilterElement(
         defaultValue: number
         options: string[]
         name?: string
+        nameIcon?: string
         searchable?: boolean
         minimal?: boolean
         icon?: string
@@ -66,6 +68,7 @@ export function SelectFilterElement(
         <FilterElement
             key={name}
             name={name}
+            icon={nameIcon}
             minimal={minimal}
             className={className}
         >

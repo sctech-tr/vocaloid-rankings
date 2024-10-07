@@ -504,6 +504,7 @@ export function SongRankingsFilterBar(
                 {/* Time Period */}
                 <SelectFilterElement
                     name={langDict[filters.timePeriod.name]}
+                    nameIcon="timer"
                     value={Number(filterValues.timePeriod)}
                     defaultValue={filters.timePeriod.defaultValue}
                     options={filters.timePeriod.values.map(value => langDict[value.name])}
