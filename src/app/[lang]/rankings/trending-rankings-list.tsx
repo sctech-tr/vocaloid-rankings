@@ -10,7 +10,7 @@ import { RankingListItem } from "@/components/rankings/rankings-list-item"
 import { RankingsPageSelector } from "@/components/rankings/rankings-page-selector"
 import { RankingsSkeleton } from "@/components/rankings/rankings-skeleton"
 import { TransitioningRankingsGridItem } from "@/components/rankings/transitioning-rankings-grid-item"
-import { FilterDirection, FilterOrder, SourceType } from "@/data/types"
+import { FilterDirection, FilterOrder, SongType, SourceType } from "@/data/types"
 import { GET_SONG_RANKINGS, buildEntityNames } from "@/lib/api"
 import { ApiSongRankingsFilterResult } from "@/lib/api/types"
 import { getEntityName } from "@/localization"
@@ -64,6 +64,8 @@ export function TrendingRankingsList(
         // build & set query variables
         const includeSourceTypes = filterBarValues.includeSourceTypes?.map(type => SourceType[filters.includeSourceTypes.values[type].value || 0])
         const excludeSourceTypes = filterBarValues.excludeSourceTypes?.map(type => SourceType[filters.excludeSourceTypes.values[type].value || 0])
+        const includeSongTypes = filterBarValues.includeSongTypes?.map(type => SongType[filters.includeSongTypes.values[type].value || 0])
+        const excludeSongTypes = filterBarValues.excludeSongTypes?.map(type => SongType[filters.excludeSongTypes.values[type].value || 0])
 
         // get custom time period offset
         const to = filterBarValues.timestamp || currentTimestampDate
@@ -85,6 +87,8 @@ export function TrendingRankingsList(
             orderBy: FilterOrder[FilterOrder.POPULARITY],
             includeSourceTypes: includeSourceTypes && includeSourceTypes.length > 0 ? includeSourceTypes : undefined,
             excludeSourceTypes: excludeSourceTypes && excludeSourceTypes.length > 0 ? excludeSourceTypes : undefined,
+            includeSongTypes: includeSongTypes && includeSongTypes.length > 0 ? includeSongTypes : undefined,
+            excludeSongTypes: excludeSongTypes && excludeSongTypes.length > 0 ? excludeSongTypes : undefined
         }
     }
 
@@ -121,6 +125,8 @@ export function TrendingRankingsList(
             timePeriod: getNumericSearchParam(pickSongDefaultOrSearchParam(searchParams, defaultFilters, 'timePeriod')),
             includeSourceTypes: decodeMultiFilter(pickSongDefaultOrSearchParam(searchParams, defaultFilters, 'includeSourceTypes')),
             excludeSourceTypes: decodeMultiFilter(pickSongDefaultOrSearchParam(searchParams, defaultFilters, 'excludeSourceTypes')),
+            includeSongTypes: decodeMultiFilter(pickSongDefaultOrSearchParam(searchParams, defaultFilters, 'includeSongTypes')),
+            excludeSongTypes: decodeMultiFilter(pickSongDefaultOrSearchParam(searchParams, defaultFilters, 'excludeSongTypes')),
             from: getDateSearchParam(pickSongDefaultOrSearchParam(searchParams, defaultFilters, 'from')),
             timestamp: getDateSearchParam(pickSongDefaultOrSearchParam(searchParams, defaultFilters, 'timestamp')),
             direction: getNumericSearchParam(pickSongDefaultOrSearchParam(searchParams, defaultFilters, 'direction')),

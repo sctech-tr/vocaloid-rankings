@@ -42,6 +42,7 @@ export function TrendingActiveFilterBar(
 
     // options
     const sourceTypesOptions = filters.includeSourceTypes.values.map(value => langDict[value.name])
+    const songTypesOptions = filters.includeSongTypes.values.map(value => langDict[value.name])
 
     // timestamps
     const currentTimestampIso = generateTimestamp(currentTimestamp)
@@ -81,17 +82,19 @@ export function TrendingActiveFilterBar(
                 }
                 case FilterType.MULTI: {
                     const options = (filter as MultiFilter<number>).values
+                    const defaultValues = (filter as MultiFilter<number>).defaultValue || []
                     const parsedValue = value as number[]
                     if (parsedValue.length > 0) {
-                        parsedValue.forEach(val => {
-                            if (!isNaN(val)) {
+                        for (const n in parsedValue) {
+                            const val = parsedValue[n]
+                            if (!isNaN(val) && defaultValues[n] !== val) {
                                 activeFilters.push(<ActiveFilter name={`${langDict[filter.name]}: ${langDict[options[val].name]}`} onClick={() => {
                                     parsedValue.splice(parsedValue.indexOf(val), 1)
                                     filterValues[key as keyof typeof filterValues] = [...parsedValue] as any
                                     setFilterValues(filterValues)
                                 }} />)
                             }
-                        })
+                        }
                     }
                     break
                 }
@@ -116,6 +119,13 @@ export function TrendingActiveFilterBar(
                 setFilterValues(filterValues)
             }} />
 
+            {/* Song Type */}
+            <ToggleGroupFilterElement name={langDict['filter_song_type']} included={filterValues.includeSongTypes || []} excluded={filterValues.excludeSongTypes || []} options={songTypesOptions} onValueChanged={(newIncluded, newExcluded) => {
+                filterValues.includeSongTypes = [...newIncluded]
+                filterValues.excludeSongTypes = [...newExcluded]
+                setFilterValues(filterValues)
+            }} />
+
             {/* Time Period */}
             <SelectFilterElement
                 name={langDict[filters.timePeriod.name]}
@@ -127,6 +137,7 @@ export function TrendingActiveFilterBar(
                     setFilterValues(filterValues)
                 }}
             />
+
 
             {/* Timestamp */}
             {filterValues.timePeriod == 3 ? (
@@ -206,7 +217,7 @@ export function TrendingActiveFilterBar(
             </div>
 
             {/* floating action button */}
-            <FloatingActionButton icon='filter_alt' className="md:hidden fixed" onClick={() => setDrawerOpen(!drawerOpen)} />
+            <FloatingActionButton icon='filter_alt' className="md:hidden fixed bottom-24" onClick={() => setDrawerOpen(!drawerOpen)} />
         </ul>
 
         <Expander visible={filtersExpanded} className="w-full md:grid hidden">
@@ -222,6 +233,20 @@ export function TrendingActiveFilterBar(
                     options={sourceTypesOptions} onValueChanged={(newIncluded, newExcluded) => {
                         filterValues.includeSourceTypes = [...newIncluded]
                         filterValues.excludeSourceTypes = [...newExcluded]
+                        setFilterValues(filterValues)
+                    }}
+                />
+
+                {/* Song Type */}
+                <MultiSelectFilterElement
+                    name={langDict['filter_song_type']}
+                    placeholder={langDict['filter_year_any']}
+                    included={filterValues.includeSongTypes || []}
+                    excluded={filterValues.excludeSongTypes || []}
+                    options={songTypesOptions}
+                    onValueChanged={(newIncluded, newExcluded) => {
+                        filterValues.includeSongTypes = [...newIncluded]
+                        filterValues.excludeSongTypes = [...newExcluded]
                         setFilterValues(filterValues)
                     }}
                 />

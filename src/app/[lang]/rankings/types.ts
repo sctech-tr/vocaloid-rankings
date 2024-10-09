@@ -81,14 +81,14 @@ export class InputFilter extends Filter {
 
 export class MultiFilter<Enum> extends Filter {
     values: SelectFilterValue<Enum>[]
-    defaultValue?: string[]
+    defaultValue?: Enum[]
 
     constructor(
         name: LanguageDictionaryKey,
         key: string,
         displayActive: boolean = true,
         values: SelectFilterValue<Enum>[],
-        defaultValue?: string[]
+        defaultValue?: Enum[]
     ) {
         super(name, key, displayActive, FilterType.MULTI)
         this.values = values
@@ -326,6 +326,9 @@ export interface TrendingFilters {
     startAt: InputFilter
     includeSourceTypes: MultiFilter<SourceType>
     excludeSourceTypes: MultiFilter<SourceType>
+    includeSongTypes: MultiFilter<SongType>
+    excludeSongTypes: MultiFilter<SongType>
+    
 }
 
 export interface TrendingFiltersValues {
@@ -336,6 +339,8 @@ export interface TrendingFiltersValues {
     startAt?: string
     includeSourceTypes?: string
     excludeSourceTypes?: string
+    includeSongTypes?: string
+    excludeSongTypes?: string
 }
 
 export interface TrendingFilterBarValues {
@@ -346,6 +351,8 @@ export interface TrendingFilterBarValues {
     startAt?: string
     includeSourceTypes?: number[]
     excludeSourceTypes?: number[]
+    includeSongTypes?: number[]
+    excludeSongTypes?: number[]
 }
 
 // describes a list of entity names with their ids mapped to a Names types

@@ -167,7 +167,6 @@ export function ArtistRankingsList(
     // load search parameters
     useEffect(() => {
         setFilterBarValuesLoaded(true)
-        console.log(defaultFilters)
         saveFilterValues({
             search: pickArtistDefaultOrSearchParam(searchParams, defaultFilters, 'search'),
             timePeriod: getNumericSearchParam(pickArtistDefaultOrSearchParam(searchParams, defaultFilters, 'timePeriod')),

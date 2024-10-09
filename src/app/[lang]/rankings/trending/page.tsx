@@ -1,5 +1,5 @@
 import { getMostRecentViewsTimestamp } from "@/data/songsData"
-import { FilterDirection, SourceType } from "@/data/types"
+import { FilterDirection, SongType, SourceType } from "@/data/types"
 import { generateTimestamp } from "@/lib/utils"
 import { Locale, getDictionary } from "@/localization"
 import { cookies } from "next/dist/client/components/headers"
@@ -77,6 +77,37 @@ const filters: TrendingFilters = {
             { name: 'bilibili', value: SourceType.BILIBILI },
         ]
     },
+    includeSongTypes: {
+        name: 'filter_song_type', // name
+        key: 'includeSongTypes',
+        displayActive: true,
+        type: FilterType.MULTI,
+        values: [
+            { name: 'filter_song_type_original', value: SongType.ORIGINAL },
+            { name: 'filter_song_type_remix', value: SongType.REMIX },
+            { name: 'filter_song_type_other', value: SongType.OTHER },
+            { name: 'filter_song_type_cover', value: SongType.COVER },
+            { name: 'filter_song_type_remaster', value: SongType.REMASTER },
+            { name: "filter_song_type_drama_pv", value: SongType.DRAMA_PV},
+            { name: "filter_song_type_music_pv", value: SongType.MUSIC_PV},
+        ]
+    },
+    excludeSongTypes: {
+        name: 'filter_song_type_exclude', // name
+        key: 'excludeSongTypes',
+        displayActive: true,
+        type: FilterType.MULTI,
+        values: [
+            { name: 'filter_song_type_original', value: SongType.ORIGINAL },
+            { name: 'filter_song_type_remix', value: SongType.REMIX },
+            { name: 'filter_song_type_other', value: SongType.OTHER },
+            { name: 'filter_song_type_cover', value: SongType.COVER },
+            { name: 'filter_song_type_remaster', value: SongType.REMASTER },
+            { name: "filter_song_type_drama_pv", value: SongType.DRAMA_PV},
+            { name: "filter_song_type_music_pv", value: SongType.MUSIC_PV},
+        ],
+        defaultValue: [SongType.DRAMA_PV]
+    },
 }
 
 export async function generateMetadata(
@@ -124,7 +155,9 @@ export default async function RankingsPage(
             <TrendingRankingsList
                 href=''
                 filters={filters}
-                defaultFilters={{}}
+                defaultFilters={{
+                    excludeSongTypes: (SongType.DRAMA_PV).toString()
+                }}
                 currentTimestamp={mostRecentTimestamp}
                 viewMode={viewMode}
             />

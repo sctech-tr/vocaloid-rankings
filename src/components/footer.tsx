@@ -17,6 +17,7 @@ export default async function Footer(
                 <FooterLink text={langDict.add_song} href={`/${lang}/song/add`}/>
                 <FooterLink text={langDict.footer_source_code} href='https://github.com/Duosion/vocaloid-rankings' />
                 <FooterLink text={langDict.footer_community} href='https://discord.gg/By7z2kKVjx' />
+                <FooterLink text={langDict.home_about} href={`/${lang}/about`} />
             </ul>
         </footer>
     )

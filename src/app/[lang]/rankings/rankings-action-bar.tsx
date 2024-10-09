@@ -59,7 +59,7 @@ export function RankingsActionBar(
             </div>
 
             {/* floating action button */}
-            <FloatingActionButton icon='filter_alt' className="md:hidden fixed" onClick={onDrawerToggle} />
+            <FloatingActionButton icon='filter_alt' className="md:hidden fixed bottom-24" onClick={onDrawerToggle} />
         </ul>
     )
 }
