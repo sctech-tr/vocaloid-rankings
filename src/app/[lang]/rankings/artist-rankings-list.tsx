@@ -120,7 +120,7 @@ export function ArtistRankingsList(
             excludeSourceTypes: excludeSourceTypes && excludeSourceTypes.length > 0 ? excludeSourceTypes : undefined,
             includeSongTypes: includeSongTypes && includeSongTypes.length > 0 ? includeSongTypes : undefined,
             excludeSongTypes: excludeSongTypes && excludeSongTypes.length > 0 ? excludeSongTypes : undefined,
-            includeArtistTypes: includeArtistTypes && includeArtistTypes.length > 0 ? includeArtistTypes : filters.includeArtistTypes.defaultValue,
+            includeArtistTypes: includeArtistTypes && includeArtistTypes.length > 0 ? includeArtistTypes : filters.includeArtistTypes.defaultValue?.map(value => ArtistType[value]),
             excludeArtistTypes: excludeArtistTypes && excludeArtistTypes.length > 0 ? excludeArtistTypes : undefined,
             artistCategory: ArtistCategory[category],
             songPublishDate: (songPublishYear || songPublishMonth || songPublishDay) ? buildFuzzyDate(songPublishYear, songPublishMonth, songPublishDay) : undefined,
