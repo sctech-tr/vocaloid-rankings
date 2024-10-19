@@ -75,6 +75,29 @@ export function substituteStringVariables(
     }
     return toSub
 }
+export const artistCategoryToApiArtistTypeNames: {
+    [key in ArtistCategory]: String[];
+} = {
+    [ArtistCategory.VOCALIST]: [
+        ArtistType[ArtistType.VOCALOID],
+        ArtistType[ArtistType.CEVIO],
+        ArtistType[ArtistType.SYNTHESIZER_V],
+        ArtistType[ArtistType.OTHER_VOCALIST],
+        ArtistType[ArtistType.OTHER_VOICE_SYNTHESIZER],
+        ArtistType[ArtistType.UTAU],
+        ArtistType[ArtistType.PROJECT_SEKAI],
+        ArtistType[ArtistType.VOICEROID]
+    ],
+    [ArtistCategory.PRODUCER]: [
+        ArtistType[ArtistType.ILLUSTRATOR],
+        ArtistType[ArtistType.COVER_ARTIST],
+        ArtistType[ArtistType.ANIMATOR],
+        ArtistType[ArtistType.PRODUCER],
+        ArtistType[ArtistType.OTHER_INDIVIDUAL],
+        ArtistType[ArtistType.OTHER_GROUP]
+    ]
+};
+
 export const artistCategoryToApiArtistTypes: {
     [key in ArtistCategory]: ArtistType[];
 } = {

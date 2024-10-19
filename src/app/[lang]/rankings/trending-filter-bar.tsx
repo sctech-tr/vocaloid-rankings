@@ -217,7 +217,7 @@ export function TrendingActiveFilterBar(
             </div>
 
             {/* floating action button */}
-            <FloatingActionButton icon='filter_alt' className="md:hidden fixed bottom-24" onClick={() => setDrawerOpen(!drawerOpen)} />
+            <FloatingActionButton icon='filter_alt' className="md:hidden" onClick={() => setDrawerOpen(!drawerOpen)} />
         </ul>
 
         <Expander visible={filtersExpanded} className="w-full md:grid hidden">
