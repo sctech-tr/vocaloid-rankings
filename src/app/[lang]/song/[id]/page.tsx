@@ -14,14 +14,16 @@ import { Locale, getDictionary, getEntityName } from "@/localization"
 import { ArtistTypeLocaleTokens, NameTypeLocaleTokens, SongTypeLocaleTokens, SourceTypeLocaleTokens } from "@/localization/DictionaryTokenMaps"
 import { Hct, SchemeVibrant, argbFromHex } from "@material/material-color-utilities"
 import { Metadata } from "next"
-import { cookies } from "next/dist/client/components/headers"
+import { cookies } from "next/headers"
 import Link from "next/link"
 import { notFound } from "next/navigation"
 import { Settings } from "../../settings"
 import { RefreshSongButton } from "./refresh-song-button"
 import { DeleteSongButton } from "./delete-song-button copy"
 import { getAuthenticatedUser } from "@/lib/auth"
-import { SongViewsChart } from "./views-chart"
+//import { SongViewsChart } from "./views-chart"
+
+import type { JSX } from "react";
 
 // interfaces
 interface ViewsBreakdown {
@@ -31,17 +33,16 @@ interface ViewsBreakdown {
 }
 
 export async function generateMetadata(
-    {
-        params
-    }: {
-        params: {
+    props: {
+        params: Promise<{
             id: string,
             lang: Locale
-        }
+        }>
     }
 ): Promise<Metadata | null> {
+    const params = await props.params;
     // get settings
-    const settings = new Settings(cookies())
+    const settings = new Settings(await cookies())
     const settingTitleLanguage = settings.titleLanguage
 
     // get names
@@ -60,15 +61,14 @@ export async function generateMetadata(
 }
 
 export default async function SongPage(
-    {
-        params
-    }: {
-        params: {
+    props: {
+        params: Promise<{
             id: string
             lang: Locale
-        }
+        }>
     }
 ) {
+    const params = await props.params;
 
     // convert the id parameter into a number; get song data
     const songId = Number(params.id)
@@ -92,7 +92,7 @@ export default async function SongPage(
     }
 
     // get settings
-    const requestCookies = cookies()
+    const requestCookies = await cookies()
     const settings = new Settings(requestCookies)
     const authUser = await getAuthenticatedUser(requestCookies)
 

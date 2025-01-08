@@ -60,15 +60,20 @@ const navLinks: NavLink[] = [
   }
 ]
 
-export default async function RootLayout({
-  children,
-  params
-}: {
-  children: React.ReactNode,
-  params: {
-    lang: Locale
+export default async function RootLayout(
+  props: {
+    children: React.ReactNode,
+    params: Promise<{
+      lang: Locale
+    }>
   }
-}) {
+) {
+  const params = await props.params;
+
+  const {
+    children
+  } = props;
+
   const locale = params.lang
   const langDict = await getDictionary(locale)
   return (

@@ -49,9 +49,9 @@ export function SongRankingsFilterBar(
     const closeDrawer = () => setDrawerOpen(false)
 
     // timeouts
-    const searchTimeout = useRef<NodeJS.Timeout>()
-    const minViewsTimeout = useRef<NodeJS.Timeout>()
-    const maxViewsTimeout = useRef<NodeJS.Timeout>()
+    const searchTimeout = useRef<NodeJS.Timeout>(undefined)
+    const minViewsTimeout = useRef<NodeJS.Timeout>(undefined)
+    const maxViewsTimeout = useRef<NodeJS.Timeout>(undefined)
 
     // options
     const sourceTypesOptions = filters.includeSourceTypes.values.map(value => langDict[value.name])

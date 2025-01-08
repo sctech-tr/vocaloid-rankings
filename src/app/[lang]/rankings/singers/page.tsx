@@ -2,7 +2,7 @@ import { getMostRecentViewsTimestamp } from "@/data/songsData"
 import { ArtistCategory, ArtistType, FilterDirection, FilterOrder, SongType, SourceType } from "@/data/types"
 import { artistCategoryToApiArtistTypes, generateTimestamp } from "@/lib/utils"
 import { Locale, getDictionary } from "@/localization"
-import { cookies } from "next/dist/client/components/headers"
+import { cookies } from "next/headers"
 import { Settings } from "../../settings"
 import { ArtistRankingsFilters, FilterType } from "../types"
 import { ArtistRankingsList } from "../artist-rankings-list"
@@ -271,14 +271,13 @@ const filters: ArtistRankingsFilters = {
 }
 
 export async function generateMetadata(
-    {
-        params
-    }: {
-        params: {
+    props: {
+        params: Promise<{
             lang: Locale
-        }
+        }>
     }
 ): Promise<Metadata> {
+    const params = await props.params;
     const langDict = await getDictionary(params.lang)
 
     return {
@@ -287,20 +286,19 @@ export async function generateMetadata(
 }
 
 export default async function RankingsPage(
-    {
-        params
-    }: {
-        params: {
+    props: {
+        params: Promise<{
             lang: Locale
-        }
+        }>
     }
 ) {
+    const params = await props.params;
     // import language dictionary
     const lang = params.lang
     const langDict = await getDictionary(lang)
 
     // get settings
-    const settings = new Settings(cookies())
+    const settings = new Settings(await cookies())
 
     // general variables
     const viewMode = settings.rankingsViewMode
@@ -320,5 +318,4 @@ export default async function RankingsPage(
             />
         </section>
     )
-
 }

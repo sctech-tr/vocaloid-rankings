@@ -32,11 +32,15 @@ const nextConfig = {
           type: 'asset/source',
         }
       )
+      config.externals.push('bun:sqlite');
   
       return config;
     },
-    transpilePackages: ['@mui/x-charts']
+    transpilePackages: ['@mui/x-charts'],
+    experimental: {
+      webpackMemoryOptimizations: true,
+      turbo: {}
+    }
   }
-  
-  module.exports = nextConfig
-  
+
+module.exports = nextConfig

@@ -3,14 +3,13 @@ import { Metadata } from "next"
 import Markdown from "react-markdown"
 
 export async function generateMetadata(
-    {
-        params
-    }: {
-        params: {
+    props: {
+        params: Promise<{
             lang: Locale
-        }
+        }>
     }
 ): Promise<Metadata> {
+    const params = await props.params;
     const langDict = await getDictionary(params.lang)
 
     return {
@@ -19,14 +18,13 @@ export async function generateMetadata(
 }
 
 export default async function AddSongPage(
-    {
-        params
-    }: {
-        params: {
+    props: {
+        params: Promise<{
             lang: Locale
-        }
+        }>
     }
 ) {
+    const params = await props.params;
     // import language dictionary
     const lang = params.lang
     const langDict = await getDictionary(lang)
@@ -39,5 +37,4 @@ export default async function AddSongPage(
             <Markdown className='prose prose-md prose-material max-w-full'>{markdown}</Markdown>
         </section>
     )
-
 }

@@ -1,8 +1,8 @@
 import { ArtistCategory, ArtistType } from "@/data/types"
-import { MutableRefObject } from "react"
+import { RefObject } from "react"
 
 export function timeoutDebounce(
-    ref: MutableRefObject<NodeJS.Timeout | undefined>,
+    ref: RefObject<Timer | undefined>,
     timeout: number,
     callback: () => void
 ) {

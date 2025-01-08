@@ -9,7 +9,7 @@ import { ListValues } from "../[lang]/list/list-editor"
 import { LangLocaleTokens } from "@/localization/DictionaryTokenMaps"
 import { getImageMostVibrantColor } from "@/lib/material/material"
 import { argbFromRgb, hexFromArgb } from "@material/material-color-utilities"
-import { Palette } from "color-thief-node"
+import { Palette } from "@/lib/material/colorthief"
 
 export interface InsertListActionResponse {
     error?: LanguageDictionaryKey | string,
@@ -21,7 +21,7 @@ export async function insertListAction(
 ): Promise<InsertListActionResponse> {
     try {
         
-        const user = await getAuthenticatedUser(cookies())
+        const user = await getAuthenticatedUser(await cookies())
 
         if (!user || UserAccessLevel.EDITOR > user.accessLevel) throw new Error('Unauthorized');
 

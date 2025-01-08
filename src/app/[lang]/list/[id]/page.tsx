@@ -16,17 +16,16 @@ import { getCustomThemeStylesheet, getImageMostVibrantColor } from "@/lib/materi
 import { Hct, SchemeVibrant, argbFromHex, argbFromRgb } from "@material/material-color-utilities"
 
 export default async function ListPage(
-    {
-        params,
-        searchParams
-    }: {
-        params: {
+    props: {
+        params: Promise<{
             id: string,
             lang: Locale
-        },
-        searchParams: SongRankingsFiltersValues
+        }>,
+        searchParams: Promise<SongRankingsFiltersValues>
     }
 ) {
+    const searchParams = await props.searchParams;
+    const params = await props.params;
 
     // convert the id parameter into a number; get song data
     const listId = Number(params.id)
@@ -47,7 +46,7 @@ export default async function ListPage(
     const langDict = await getDictionary(lang)
 
     // get settings
-    const settings = new Settings(cookies())
+    const settings = new Settings(await cookies())
 
     // general variables
     const viewMode = settings.rankingsViewMode
@@ -97,5 +96,4 @@ export default async function ListPage(
             />
         </section>
     )
-
 }

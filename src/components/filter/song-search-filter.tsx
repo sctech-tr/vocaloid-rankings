@@ -64,7 +64,7 @@ export function SongSearchFilter(
 
     // react refs
     const modalRef = useRef<HTMLUListElement>(null)
-    const timeoutRef = useRef<NodeJS.Timeout>()
+    const timeoutRef = useRef<NodeJS.Timeout>(undefined)
 
     // graphql context
     const [loading, setLoading] = useState(false)

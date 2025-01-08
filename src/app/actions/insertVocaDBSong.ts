@@ -19,7 +19,7 @@ export async function insertVocaDBSong(
 
         // see if user is authenticated & an editor or higher
         // in order to skip song adding restrictions
-        const user = await getAuthenticatedUser(cookies())
+        const user = await getAuthenticatedUser(await cookies())
         let isEditor = user !== null ? user.accessLevel >= UserAccessLevel.EDITOR : false
 
         const songUrl = formData.get('songUrl')

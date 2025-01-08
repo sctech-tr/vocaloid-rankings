@@ -8,16 +8,14 @@ import { ListEditor } from "../list-editor";
 import { CircularProgress } from "@/components/material/circular-progress";
 
 export default async function NewListPage(
-    {
-        params
-    }: {
-        params: {
-            lang: Locale
-        }
-    }
+    props: {
+        params: Promise<{
+          lang: Locale
+        }>
+      }
 ) {
     // ensure that this page can be accessed by the active session
-    const user = await getAuthenticatedUser(cookies())
+    const user = await getAuthenticatedUser(await cookies())
 
     if (!user || UserAccessLevel.EDITOR > user.accessLevel) return redirect('./')
 
