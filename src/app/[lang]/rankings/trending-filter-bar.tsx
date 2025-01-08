@@ -16,6 +16,8 @@ import { Filter, FilterType, InputFilter, MultiFilter, RankingsViewMode, SelectF
 import { ToggleGroupFilterElement } from "@/components/filter/toggle-group-filter"
 import { MultiSelectFilterElement } from "@/components/filter/multi-select-filter"
 
+const minimumTimestampMillis = 29 * 24 * 60 * 60 * 1000
+
 export function TrendingActiveFilterBar(
     {
         filters,
@@ -45,6 +47,7 @@ export function TrendingActiveFilterBar(
     const songTypesOptions = filters.includeSongTypes.values.map(value => langDict[value.name])
 
     // timestamps
+    const minimumTimestampIso = generateTimestamp(new Date(currentTimestamp.getTime() - minimumTimestampMillis))
     const currentTimestampIso = generateTimestamp(currentTimestamp)
 
     // build active filters
@@ -147,6 +150,7 @@ export function TrendingActiveFilterBar(
                     <DateFilterElement
                         name={langDict.filter_time_period_offset_custom_from}
                         value={filterValues.from || currentTimestamp}
+                        min={minimumTimestampIso}
                         max={currentTimestampIso}
                         onValueChanged={newValue => {
                             filterValues.from = newValue
@@ -158,6 +162,7 @@ export function TrendingActiveFilterBar(
                     <DateFilterElement
                         name={langDict.filter_time_period_offset_custom_to}
                         value={filterValues.timestamp || currentTimestamp}
+                        min={minimumTimestampIso}
                         max={currentTimestampIso}
                         onValueChanged={newValue => {
                             filterValues.timestamp = newValue
@@ -170,6 +175,7 @@ export function TrendingActiveFilterBar(
                 : <DateFilterElement
                     name={langDict[filters.timestamp.name]}
                     value={filterValues.timestamp || currentTimestamp}
+                    min={minimumTimestampIso}
                     max={currentTimestampIso}
                     onValueChanged={newValue => {
                         filterValues.timestamp = newValue
@@ -271,6 +277,7 @@ export function TrendingActiveFilterBar(
                         <DateFilterElement
                             name={langDict.filter_time_period_offset_custom_from}
                             value={filterValues.from || currentTimestamp}
+                            min={minimumTimestampIso}
                             max={currentTimestampIso}
                             onValueChanged={newValue => {
                                 filterValues.from = newValue
@@ -282,6 +289,7 @@ export function TrendingActiveFilterBar(
                         <DateFilterElement
                             name={langDict.filter_time_period_offset_custom_to}
                             value={filterValues.timestamp || currentTimestamp}
+                            min={minimumTimestampIso}
                             max={currentTimestampIso}
                             onValueChanged={newValue => {
                                 filterValues.timestamp = newValue
@@ -294,6 +302,7 @@ export function TrendingActiveFilterBar(
                     : <DateFilterElement
                         name={langDict[filters.timestamp.name]}
                         value={filterValues.timestamp || currentTimestamp}
+                        min={minimumTimestampIso}
                         max={currentTimestampIso}
                         onValueChanged={newValue => {
                             filterValues.timestamp = newValue

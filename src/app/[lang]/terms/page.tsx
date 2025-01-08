@@ -13,11 +13,11 @@ export async function generateMetadata(
     const langDict = await getDictionary(params.lang)
 
     return {
-        title: langDict.home_about,
+        title: langDict.footer_terms,
     }
 }
 
-export default async function AboutPage(
+export default async function TermsPage(
     props: {
         params: Promise<{
             lang: Locale
@@ -25,7 +25,7 @@ export default async function AboutPage(
     }
 ) {
     const params = await props.params;
-    const markdown = await import(`@/localization/docs/${params.lang}/about.md`).then(module => module.default)
+    const markdown = await import(`@/localization/docs/en/terms.md`).then(module => module.default)
 
     return (
         <section className="flex flex-col gap-5 w-full min-h-screen max-w-4xl">
