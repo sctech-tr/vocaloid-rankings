@@ -2800,33 +2800,48 @@ export async function refreshAllSongsViews(
     }
 }
 
-if (process.env.NODE_ENV === 'production') {
-    //refresh views
-    refreshAllSongsViews().catch(error => console.log(`Error when refreshing every songs' views: ${error}`))
-}
+// const refreshDormant = async () => {
+//     const timeNow = new Date().getTime()
+//     const songIds = db.prepare(`SELECT id, publish_date, addition_date, dormant FROM songs`).all() as RawSongData[];
+//     let n = 0
+//     for (const rawSong of songIds) {
+//         const previousViews = getSongViewsSync(rawSong.id, "2024-11-23")
+//         const views = getSongViewsSync(rawSong.id, "2024-11-24")
+//         if (
+//             ((timeNow - new Date(rawSong.publish_date).getTime()) >= (183 * 24 * 60 * 60 * 1000))
+//             && (views && previousViews && ((Number(views.total) - Number(previousViews.total)) < 1000))
+//             && (rawSong.dormant === 0)
+//         ) {
+//             console.log(`Make "${rawSong.id}" dormant.`)
+//             updateSongSync({
+//                 id: rawSong.id,
+//                 isDormant: true
+//             })
+//             n += 1
+//         }
+//     }
+//     console.log(`Made ${n} songs dormant.`);
+// }
 
-const refreshDormant = async () => {
-    const timeNow = new Date().getTime()
-    const songIds = db.prepare(`SELECT id, publish_date, addition_date, dormant FROM songs`).all() as RawSongData[];
-    let n = 0
-    for (const rawSong of songIds) {
-        const previousViews = getSongViewsSync(rawSong.id, "2024-11-23")
-        const views = getSongViewsSync(rawSong.id, "2024-11-24")
-        if (
-            ((timeNow - new Date(rawSong.publish_date).getTime()) >= (183 * 24 * 60 * 60 * 1000))
-            && (views && previousViews && ((Number(views.total) - Number(previousViews.total)) < 1000))
-            && (rawSong.dormant === 0)
-        ) {
-            console.log(`Make "${rawSong.id}" dormant.`)
-            updateSongSync({
-                id: rawSong.id,
-                isDormant: true
-            })
-            n += 1
-        }
-    }
-    console.log(`Made ${n} songs dormant.`);
-}
+// export async function refreshViewsV2() {
+//     const songIds = db.prepare(`
+//         SELECT video_id
+//         FROM songs_video_ids
+//         WHERE video_type = 0
+//         LIMIT 1000
+//         `).all({
+//             "timestamp": getMostRecentViewsTimestampSync()
+//         }) as any[];
+
+//     console.time("refresh_views")
+//     const result = await YouTube.getConcurrentViewsInChunks(
+//         songIds.map(result => result.video_id),
+//         30,
+//         10,
+//     );
+//     console.timeEnd("refresh_views")
+//     console.log(result);
+// }
 
 //refreshDormant()
 

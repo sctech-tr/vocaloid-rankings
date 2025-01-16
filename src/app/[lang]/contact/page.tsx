@@ -24,8 +24,8 @@ export default async function ContactPage(
         }>
     }
 ) {
-    const params = await props.params;
-    const markdown = await import(`@/localization/docs/en/contact.md`).then(module => module.default)
+    const lang = "en";
+    const markdown = await import(`@/localization/docs/${lang}/contact.md`).then(module => module.default)
 
     return (
         <section className="flex flex-col gap-5 w-full min-h-screen max-w-4xl">

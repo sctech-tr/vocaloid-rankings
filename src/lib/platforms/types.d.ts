@@ -1,3 +1,5 @@
+import { SourceType } from "@/data/types"
+
 export type VideoId = string
 
 export interface VideoThumbnails {

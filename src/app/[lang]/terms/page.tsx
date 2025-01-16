@@ -24,8 +24,8 @@ export default async function TermsPage(
         }>
     }
 ) {
-    const params = await props.params;
-    const markdown = await import(`@/localization/docs/en/terms.md`).then(module => module.default)
+    const lang = "en";
+    const markdown = await import(`@/localization/docs/${lang}/terms.md`).then(module => module.default)
 
     return (
         <section className="flex flex-col gap-5 w-full min-h-screen max-w-4xl">

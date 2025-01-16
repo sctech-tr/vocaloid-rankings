@@ -1,8 +1,55 @@
 import { ArtistCategory, ArtistType } from "@/data/types"
 import { RefObject } from "react"
 
+/**
+ * Takes an array and generates chunks of chunkSize from this array.
+ * 
+ * For example, if you had an array of length 100 and a chunkSize of 50, 
+ * this generator would generate two arrays of 50 length from that
+ * original array.
+ * 
+ * @param arr The array to generate chunks from.
+ * @param chunkSize The size of chunks to generate.
+ */
+export function* chunks<T>(arr: T[], chunkSize: number): Generator<T[]> {
+    for (let i = 0; i < arr.length; i += chunkSize) {
+        yield arr.slice(i, i + chunkSize);
+    }
+}
+
+export async function retryWithExpontentialBackoff<T>(
+    operation: () => Promise<T>,
+    maxRetries: number = 3,
+    baseDelay: number = 1000,
+    maxDelay: number = 10000,
+): Promise<T | null> {
+    let retries = 0;
+
+    while (retries < maxRetries) {
+        try {
+            return await operation()
+        } catch (err) {
+            console.error(err)
+            
+            retries++;
+
+            if (retries === maxRetries) {
+                break
+            }
+
+            const delay = Math.min(
+                baseDelay * Math.pow(2, retries - 1) + Math.random() * 1000,
+                maxDelay
+            )
+
+            await new Promise(resolve => setTimeout(resolve, delay))
+        }
+    }
+    return null
+}
+
 export function timeoutDebounce(
-    ref: RefObject<Timer | undefined>,
+    ref: RefObject<NodeJS.Timeout | undefined>,
     timeout: number,
     callback: () => void
 ) {
