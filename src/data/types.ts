@@ -405,8 +405,9 @@ export interface RawSongArtist {
 }
 
 export interface RawSongVideoId {
+    song_id: number
     video_id: string
-    video_type: number
+    video_type: SourceType
 }
 
 export interface RawArtistData {
@@ -434,6 +435,13 @@ export interface RawViewBreakdown {
     views: number | bigint
     video_id: string
     view_type: number
+}
+
+export interface SongVideoViews {
+    songId: number,
+    videoId: string,
+    sourceType: SourceType,
+    views: number | bigint
 }
 
 export interface RawSongRankingsResult {

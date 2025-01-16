@@ -86,12 +86,14 @@ const sourcePollers: { [key: string]: VocaDBSourcePoller } = {
         type: SourceType.YOUTUBE,
         getViews: YouTube.getViews,
         getThumbnails: YouTube.getThumbnails,
+        getViewsConcurrent: YouTube.getViewsConcurrent
     },
     ["NicoNicoDouga"]: {
         dataName: "Niconico",
         type: SourceType.NICONICO,
         getViews: Niconico.getViews,
         getThumbnails: Niconico.getThumbnails,
+        getViewsConcurrent: Niconico.getViewsConcurrent
     },
     ["Bilibili"]: {
         dataName: "bilibili",
@@ -99,6 +101,7 @@ const sourcePollers: { [key: string]: VocaDBSourcePoller } = {
         idPrefix: "av",
         getViews: bilibili.getViews,
         getThumbnails: bilibili.getThumbnails,
+        getViewsConcurrent: bilibili.getViewsConcurrent
     }
 }
 

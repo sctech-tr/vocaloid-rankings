@@ -1,5 +1,5 @@
 import { defaultFetchHeaders } from ".";
-import { Platform, VideoId, VideoThumbnails } from "./types";
+import { Platform, VideoId, VideoIdViewsMap, VideoThumbnails } from "./types";
 import { chunks, retryWithExpontentialBackoff } from "../utils";
 
 interface YouTubeVideosItemStatistics {
@@ -21,7 +21,7 @@ interface YouTubeBody {
     error: YouTubeError | undefined
 }
 
-type VideoIdViewsMap = Map<VideoId, number>;
+const YOUTUBE_CHUNK_SIZE = 35;
 
 class YouTubePlatform implements Platform {
 
@@ -57,15 +57,14 @@ class YouTubePlatform implements Platform {
         return viewsMap
     }
 
-    async getConcurrentViewsInChunks(
+    async getViewsConcurrent(
         videoIds: VideoId[],
-        chunkSize: number = 25,
         concurrency: number = 5,
         maxRetries?: number
     ): Promise<VideoIdViewsMap> {
         const viewsMap: VideoIdViewsMap = new Map();
-        const videoIdChunks = [...chunks(videoIds, chunkSize)];
-        const getViewsBatch = this.getViewsBatch;
+        const videoIdChunks = [...chunks(videoIds, YOUTUBE_CHUNK_SIZE)];
+        const getViewsBatch = new YouTubePlatform().getViewsBatch;
 
         async function processChunk(chunk: VideoId[]) {
             const result = await retryWithExpontentialBackoff(
@@ -86,42 +85,6 @@ class YouTubePlatform implements Platform {
         }
 
         return viewsMap;
-        
-        // const queue: Promise<VideoIdViewsMap | null>[] = [];
-        // let viewsMap: VideoIdViewsMap = new Map();
-
-        // for (const videoIdsChunk of chunks(videoIds, chunkSize)) {
-        //     const promise: Promise<VideoIdViewsMap | null> = retryWithExpontentialBackoff(() => this.getViewsBatch(videoIdsChunk), maxRetries);
-        //     queue.push(promise);
-
-        //     if (queue.length >= concurrency) {
-        //         await Promise.race(queue)
-        //         const completedPromise = await Promise.race(
-        //             queue.map(async (promise, i) => {
-        //                 const promiseResult = await promise;
-        //                 return [promiseResult, i];
-        //             })
-        //         );
-        //         const promiseResult = completedPromise[0];
-        //         const completedIndex = completedPromise[1];
-                
-        //         if (promiseResult !== null) {
-        //             viewsMap = new Map([...viewsMap.entries(), ...(promiseResult as VideoIdViewsMap).entries()])
-        //         }
-        //         queue.splice(completedIndex as number, 1);
-        //     }
-        // }
-
-        // await Promise.all(queue)
-        //     .then(promiseResults => {
-        //         for (const promiseResult of promiseResults) {
-        //             if (promiseResult !== null) {
-        //                 viewsMap = new Map([...viewsMap.entries(), ...promiseResult.entries()])
-        //             }
-        //         }
-        //     })
-
-        // return viewsMap;
     }
 
     getThumbnails(

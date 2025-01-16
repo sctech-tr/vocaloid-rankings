@@ -6,7 +6,8 @@ import { getVocaDBRecentSongs } from "@/lib/vocadb";
 import { Locale } from "@/localization";
 import type { Statement } from "better-sqlite3";
 import getDatabase, { Databases } from ".";
-import { Artist, ArtistCategory, ArtistPlacement, ArtistRankingsFilterParams, ArtistRankingsFilterResult, ArtistRankingsFilterResultItem, ArtistThumbnailType, ArtistThumbnails, ArtistType, FilterInclusionMode, HistoricalViews, HistoricalViewsResult, Id, List, ListLocalizationType, ListLocalizations, NameType, Names, PlacementChange, RawArtistData, RawArtistName, RawArtistRankingResult, RawArtistThumbnail, RawList, RawListLocalization, RawListSong, RawSongArtist, RawSongData, RawSongName, RawSongRankingsResult, RawSongVideoId, RawViewBreakdown, Song, SongArtistsCategories, SongPlacement, SongRankingsFilterParams, SongRankingsFilterResult, SongRankingsFilterResultItem, SongType, SongVideoIds, SourceType, SqlRankingsFilterInVariables, SqlRankingsFilterParams, SqlRankingsFilterStatements, SqlSearchArtistsFilterParams, SqlSearchSongsFilterParams, User, UserAccessLevel, VideoViews, Views, ViewsBreakdown } from "./types";
+import { Artist, ArtistCategory, ArtistPlacement, ArtistRankingsFilterParams, ArtistRankingsFilterResult, ArtistRankingsFilterResultItem, ArtistThumbnailType, ArtistThumbnails, ArtistType, FilterInclusionMode, HistoricalViews, HistoricalViewsResult, Id, List, ListLocalizationType, ListLocalizations, NameType, Names, PlacementChange, RawArtistData, RawArtistName, RawArtistRankingResult, RawArtistThumbnail, RawList, RawListLocalization, RawListSong, RawSongArtist, RawSongData, RawSongName, RawSongRankingsResult, RawSongVideoId, RawViewBreakdown, Song, SongArtistsCategories, SongPlacement, SongRankingsFilterParams, SongRankingsFilterResult, SongRankingsFilterResultItem, SongType, SongVideoIds, SongVideoViews, SourceType, SqlRankingsFilterInVariables, SqlRankingsFilterParams, SqlRankingsFilterStatements, SqlSearchArtistsFilterParams, SqlSearchSongsFilterParams, User, UserAccessLevel, VideoViews, Views, ViewsBreakdown } from "./types";
+import { VideoId, VideoIdViewsMap } from "@/lib/platforms/types";
 
 // import database
 const db = getDatabase(Databases.SONGS_DATA)
@@ -1720,6 +1721,38 @@ function insertSongViewsSync(
     return views
 }
 
+/**
+ * Batch inserts multiple video views into the database.
+ * 
+ * @param videosViews 
+ * @param timestamp 
+ */
+function insertVideoViewsBatchSync(
+    videosViews: SongVideoViews[],
+    timestamp?: string
+) {
+    timestamp = timestamp || getMostRecentViewsTimestampSync() || generateTimestamp();
+
+    const transaction = db.transaction((videosViews: SongVideoViews[]) => {
+        const insertStatement = db.prepare(`
+            INSERT OR REPLACE INTO views_breakdowns (song_id, timestamp, views, video_id, view_type)
+            VALUES (?, ?, ?, ?, ?)
+        `);
+
+        for (const videoViews of videosViews) {
+            insertStatement.run(
+                videoViews.songId,
+                timestamp,
+                videoViews.views,
+                videoViews.videoId,
+                videoViews.sourceType
+            )
+        }
+    })
+    
+    transaction(videosViews);
+}
+
 function buildSongPlacement(
     allTime: number,
     releaseYear: number
@@ -2583,7 +2616,6 @@ export function deleteList(
 
 
 // View Manipulation
-
 const viewPlatformProviders: { [key in SourceType]: (videoId: string) => Promise<number | null> } = {
     [SourceType.YOUTUBE]: YouTube.getViews,
     [SourceType.NICONICO]: Niconico.getViews,
@@ -2669,179 +2701,71 @@ export async function getSongMostRecentViews(
     }
 }
 
-let isRefreshing = false;
-
-interface RefreshingSong {
-    id: Id,
-    dormant: boolean,
-    publishTime: number,
-    additionTime: number
-}
+const viewPlatformBatchProviders: { [key in SourceType]: (videoIds: VideoId[], concurrency?: number, maxRetries?: number) => Promise<VideoIdViewsMap> } = {
+    [SourceType.YOUTUBE]: YouTube.getViewsConcurrent,
+    [SourceType.NICONICO]: Niconico.getViewsConcurrent,
+    [SourceType.BILIBILI]: bilibili.getViewsConcurrent
+};
 
 export async function refreshAllSongsViews(
-    maxRetries: number = 5,
-    retryDelay: number = 1000,
-    maxConcurrent: number = 10,
-    minDormantPublishAge: number = 365 * 24 * 60 * 60 * 1000, // in milliseconds, the minimum amount of ms since song publish before it can become dormant
-    minDormantAdditionAge: number = 3 * 24 * 60 * 60 * 1000, // in milliseconds, the minimum amount of ms since song addition before it can become dormant
-    minDormantViews: number = 2500 // the minimum number of daily views a song can have before it can become dormant
-): Promise<void> {
-    if (isRefreshing) throw new Error('All songs views are already being refreshed.');
+    concurrency?: number
+) {
+    const timestamp = generateTimestamp();
+    if (timestampExistsSync(timestamp)) throw new Error(`Songs views were already refreshed for timestamp "${timestamp}"`);
 
-    isRefreshing = true;
+    console.log("Refreshing views...");
+    console.time("refresh_views");
 
-    try {
-        console.log(`Updating all songs' views...`);
-
-        const timeNow = new Date().getTime()
-        const timestamp = generateTimestamp();
-        if (timestampExistsSync(timestamp)) throw new Error(`Songs views were already refreshed for timestamp "${timestamp}"`);
-        
-        // we will be refreshing song views in the order of their views earned in the past day
+    const songIdsBySourceType: Map<SourceType, RawSongVideoId[]> = new Map();
+    {
         const songIds = db.prepare(`
-        SELECT views_breakdowns.song_id as id,
-            songs.publish_date, 
-            songs.addition_date,
-            SUM(views_breakdowns.views) - ifnull((SELECT SUM(DISTINCT offset_breakdowns.views) as offset_views
-            FROM views_breakdowns AS offset_breakdowns
-            INNER JOIN songs ON offset_breakdowns.song_id = songs.id
-            WHERE (offset_breakdowns.timestamp = DATE(:timestamp, '-1 day'))
-                AND (songs.id = views_breakdowns.song_id)
-            GROUP BY offset_breakdowns.song_id), 0) as daily_views
-        FROM views_breakdowns
-        INNER JOIN songs ON views_breakdowns.song_id = songs.id
-        WHERE (views_breakdowns.timestamp = :timestamp)
-        GROUP BY views_breakdowns.song_id
-        ORDER BY daily_views DESC
-        `).all({
-            "timestamp": getMostRecentViewsTimestampSync()
-        }) as RawSongData[];
+            SELECT song_id, video_id, video_type
+            FROM songs_video_ids
+            `).all() as RawSongVideoId[];
 
-        const refreshingPromises: Promise<void>[] = [];
-
-        const throttledExecutions = async () => {
-            for (const rawSong of songIds) {
-                if (refreshingPromises.length >= maxConcurrent) {
-                    await Promise.all(refreshingPromises);
-                    refreshingPromises.length = 0; // Empty the array without creating a new reference.
-                }
-                refreshingPromises.push(
-                    retractAttempt({
-                        id: rawSong.id,
-                        dormant: rawSong.dormant == 1 ? true : false,
-                        publishTime: new Date(rawSong.publish_date).getTime(),
-                        additionTime: new Date(rawSong.addition_date).getTime()
-                    }, timestamp, 0)
-                );
+        for (const songVideoId of songIds) {
+            const sourceType = songVideoId.video_type
+            let bucket = songIdsBySourceType.get(sourceType);
+            if (bucket === undefined) {
+                bucket = [];
+                songIdsBySourceType.set(sourceType, bucket)
             }
-            await Promise.all(refreshingPromises);
-        };
-
-        const retractAttempt = async (song: RefreshingSong, timestamp: string, depth: number): Promise<void> => {
-            try {
-                const currentViews = getSongViewsSync(song.id, timestamp)
-                const currentViewsTimestamp = currentViews?.timestamp
-                // don't try to refresh views for this song if its views have already been refreshed for this timestamp
-                if ((currentViewsTimestamp === undefined) || currentViewsTimestamp !== timestamp) {
-
-                    const previousViews = getSongViewsSync(song.id)
-                    if (!song.dormant) {
-                        const viewsResult = await getSongMostRecentViews(song.id, timestamp, previousViews || undefined);
-                        if (!viewsResult) throw new Error('Most recent views was null.');
-                        const views = viewsResult.views
-
-                        insertSongViewsSync(song.id, views);
-                        console.log(`Refreshed views for (${song.id})`);
-
-                        // make song dormant if necessary
-                        if (previousViews
-                            && (!viewsResult.didFallback)
-                            && (minDormantViews >= (Number(views.total) - Number(previousViews.total)))
-                            && ((timeNow - song.publishTime) >= minDormantPublishAge)
-                            && ((timeNow - song.additionTime) >= minDormantAdditionAge)
-                        ) {
-                            console.log(`Made (${song.id}) dormant.`)
-                            updateSongSync({
-                                id: song.id,
-                                isDormant: true
-                            })
-                        }
-                    } else if (previousViews) {
-                        previousViews.timestamp = timestamp
-                        insertSongViewsSync(song.id, previousViews)
-                    }
-                }
-            } catch (error) {
-                console.log(`Error when refreshing song with id (${song.id}). Error: ${error}`);
-                if (maxRetries > depth) {
-                    await new Promise(resolve => setTimeout(resolve, retryDelay));
-                    await retractAttempt(song, timestamp, depth + 1);
-                }
-            }
-        };
-
-        await throttledExecutions();
-
-        db.prepare(`INSERT INTO views_metadata (timestamp, updated) VALUES (?, ?)`).run(timestamp, new Date().toISOString());
-        console.log(`All songs' views updated.`);
-
-        // get recent songs
-        await getVocaDBRecentSongs()
-            .then(songs => {
-                for (const song of songs) {
-                    if (!songExistsSync) insertSongSync(song)
-                }
-            })
-            .catch(error => console.log(`Error when getting recent VocaDB songs: ${error}`))
-    } catch (error) {
-        throw error;
-    } finally {
-        isRefreshing = false;
+            bucket.push(songVideoId)
+        }
     }
+
+    // do each source type
+    for (const [sourceType, videoIds] of songIdsBySourceType.entries()) {
+        console.log(`Refreshing ${videoIds.length} Source Type ${sourceType} views...`)
+        console.time(`refresh_views_${sourceType}`)
+
+        const viewCounts = await viewPlatformBatchProviders[sourceType](
+            videoIds.map(result => result.video_id),
+            concurrency
+        );
+
+        const videoViews: SongVideoViews[] = [];
+        for (const video of videoIds) {
+            const videoId = video.video_id;
+            videoViews.push({
+                songId: video.song_id,
+                videoId: videoId,
+                sourceType: sourceType,
+                views: viewCounts.get(videoId) ?? 0
+            })
+        }
+
+        console.log(`Inserting ${videoViews.length} Source Type ${sourceType} views into database...`)
+        insertVideoViewsBatchSync(videoViews, timestamp)
+
+        console.timeEnd(`refresh_views_${sourceType}`)
+    }
+
+    db.prepare(`INSERT INTO views_metadata (timestamp, updated) VALUES (?, ?)`).run(timestamp, new Date().toISOString());
+    
+    console.log(`All songs' views updated.`);
+    console.timeEnd("refresh_views");
 }
-
-// const refreshDormant = async () => {
-//     const timeNow = new Date().getTime()
-//     const songIds = db.prepare(`SELECT id, publish_date, addition_date, dormant FROM songs`).all() as RawSongData[];
-//     let n = 0
-//     for (const rawSong of songIds) {
-//         const previousViews = getSongViewsSync(rawSong.id, "2024-11-23")
-//         const views = getSongViewsSync(rawSong.id, "2024-11-24")
-//         if (
-//             ((timeNow - new Date(rawSong.publish_date).getTime()) >= (183 * 24 * 60 * 60 * 1000))
-//             && (views && previousViews && ((Number(views.total) - Number(previousViews.total)) < 1000))
-//             && (rawSong.dormant === 0)
-//         ) {
-//             console.log(`Make "${rawSong.id}" dormant.`)
-//             updateSongSync({
-//                 id: rawSong.id,
-//                 isDormant: true
-//             })
-//             n += 1
-//         }
-//     }
-//     console.log(`Made ${n} songs dormant.`);
-// }
-
-// export async function refreshViewsV2() {
-//     const songIds = db.prepare(`
-//         SELECT video_id
-//         FROM songs_video_ids
-//         WHERE video_type = 0
-//         LIMIT 1000
-//         `).all({
-//             "timestamp": getMostRecentViewsTimestampSync()
-//         }) as any[];
-
-//     console.time("refresh_views")
-//     const result = await YouTube.getConcurrentViewsInChunks(
-//         songIds.map(result => result.video_id),
-//         30,
-//         10,
-//     );
-//     console.timeEnd("refresh_views")
-//     console.log(result);
-// }
 
 //refreshDormant()
 
