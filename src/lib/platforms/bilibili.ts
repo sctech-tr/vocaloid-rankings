@@ -23,31 +23,31 @@ class bilibiliPlatform implements Platform {
     }
 
     async getViewsConcurrent(
-            videoIds: VideoId[], 
-            concurrency: number = 2, 
-            maxRetries?: number
-        ): Promise<VideoIdViewsMap> {
-            const viewsMap: VideoIdViewsMap = new Map();
-            const getViews = new bilibiliPlatform().getViews;
-    
-            async function processVideoId(videoId: VideoId) {
-                const views = await retryWithExpontentialBackoff(
-                    () => getViews(videoId),
-                    maxRetries
-                )
-    
-                if (views !== null) {
-                    viewsMap.set(videoId, views);
-                }
+        videoIds: VideoId[],
+        concurrency: number = 1,
+        maxRetries?: number
+    ): Promise<VideoIdViewsMap> {
+        const viewsMap: VideoIdViewsMap = new Map();
+        const getViews = new bilibiliPlatform().getViews;
+
+        async function processVideoId(videoId: VideoId) {
+            const views = await retryWithExpontentialBackoff(
+                () => getViews(videoId),
+                maxRetries
+            )
+
+            if (views !== null) {
+                viewsMap.set(videoId, views);
             }
-    
-            for (let i = 0; i < videoIds.length; i += concurrency) {
-                const batch = videoIds.slice(i, i + concurrency);
-                await Promise.all(batch.map(processVideoId))
-            }
-    
-            return viewsMap;
         }
+
+        for (let i = 0; i < videoIds.length; i += concurrency) {
+            const batch = videoIds.slice(i, i + concurrency);
+            await Promise.all(batch.map(processVideoId))
+        }
+
+        return viewsMap;
+    }
 
     getThumbnails(
         videoId: VideoId

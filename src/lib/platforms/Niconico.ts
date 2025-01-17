@@ -52,8 +52,8 @@ class NiconicoPlatform implements Platform {
         videoId: VideoId
     ): Promise<number | null> {
         return fetch(`${nicoNicoAPIDomain}videos?watchIds=${videoId}`, {
-                headers: headers
-            }).then(res => res.json())
+            headers: headers
+        }).then(res => res.json())
             .then(videoData => {
                 return videoData['data']['items'][0]['video']['count']['view']
             })
@@ -61,8 +61,8 @@ class NiconicoPlatform implements Platform {
     }
 
     async getViewsConcurrent(
-        videoIds: VideoId[], 
-        concurrency: number = 10, 
+        videoIds: VideoId[],
+        concurrency: number = 10,
         maxRetries?: number
     ): Promise<VideoIdViewsMap> {
         const viewsMap: VideoIdViewsMap = new Map();
