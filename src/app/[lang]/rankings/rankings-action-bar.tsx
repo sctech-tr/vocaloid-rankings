@@ -28,7 +28,7 @@ export function RankingsActionBar(
         onViewModeChanged?: (newViewMode: RankingsViewMode) => void
         onExpandToggle?: MouseEventHandler
         onDrawerToggle?: MouseEventHandler
-        playlistUrl: string | null
+        playlistUrl?: string | null
     }
 ) {
     const langDict = useLocale()
@@ -38,6 +38,9 @@ export function RankingsActionBar(
 
             {/* Leading content */}
             {children}
+
+            {/* Mobile Listen button */}
+            {playlistUrl !== undefined ? <li key="listen-button" className="md:hidden block w-full"><FilledTonalButton className="w-full" icon="headphones" text={langDict.rankings_listen} href={playlistUrl ?? ""}/></li> : <></>}
 
             <div key='actions' className="sm:w-fit flex-1">
                 <ul className="flex justify-end items-center gap-3 w-full">
@@ -57,7 +60,7 @@ export function RankingsActionBar(
                         onViewModeChanged?.(RankingsViewMode.GRID)
                     }} />
 
-                    <li key="listen-button"><FilledTonalButton icon="headphones" text={langDict.rankings_listen} href={playlistUrl ?? ""}/></li>
+                    {playlistUrl !== undefined ? <li key="listen-button" className="md:block hidden"><FilledTonalButton icon="headphones" text={langDict.rankings_listen} href={playlistUrl ?? ""}/></li> : <></>}
                     <li key='filter-button' className="md:block hidden"><FilledButton icon={ filtersExpanded ? 'expand_less' : 'expand_more' } text={langDict.rankings_filter} onClick={onExpandToggle} /></li>
                 </ul>
             </div>
