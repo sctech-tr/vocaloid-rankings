@@ -142,7 +142,8 @@ export function ArtistRankingsList(
     // import graphql context
     const [queryVariables, setQueryVariables] = useState(getQueryVariables)
     const { loading, error, data } = useQuery(GET_ARTIST_RANKINGS, {
-        variables: queryVariables
+        variables: queryVariables,
+        skip: !filterBarValuesLoaded
     })
     const rankingsResult = data?.artistRankings as ApiArtistRankingsFilterResult | undefined
 

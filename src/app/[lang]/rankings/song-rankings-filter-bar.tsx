@@ -30,7 +30,8 @@ export function SongRankingsFilterBar(
         entityNames,
         setFilterValues,
         setRankingsViewMode,
-        setEntityNames
+        setEntityNames,
+        playlistUrl
     }: {
         filters: RankingsFilters
         filterValues: SongRankingsFilterBarValues
@@ -38,7 +39,8 @@ export function SongRankingsFilterBar(
         entityNames: EntityNames,
         setFilterValues: (newValues: SongRankingsFilterBarValues, route?: boolean, merge?: boolean) => void,
         setRankingsViewMode: (newMode: RankingsViewMode) => void,
-        setEntityNames: (newNames: EntityNames) => void
+        setEntityNames: (newNames: EntityNames) => void,
+        playlistUrl: string | null
     }
 ) {
 
@@ -377,6 +379,7 @@ export function SongRankingsFilterBar(
             onViewModeChanged={(newMode) => setRankingsViewMode(newMode)}
             onExpandToggle={_ => setFiltersExpanded(!filtersExpanded)}
             onDrawerToggle={_ => setDrawerOpen(!drawerOpen)}
+            playlistUrl={playlistUrl}
         >
             {/* Search */}
             <InputFilterElement

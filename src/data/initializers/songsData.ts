@@ -22,6 +22,10 @@ export default function init(
         last_updated TEXT NOT NULL,
         last_refreshed TEXT,
         dormant INTEGER NOT NULL)`).run()
+    database.prepare(`
+    CREATE INDEX IF NOT EXISTS idx_songs_composite 
+        ON songs (publish_date, song_type);    
+    `).run()
 
     // create songs artists table
     database.prepare(`CREATE TABLE IF NOT EXISTS songs_artists (
@@ -32,8 +36,8 @@ export default function init(
         FOREIGN KEY (song_id) REFERENCES songs (id) ON DELETE CASCADE,
         FOREIGN KEY (artist_id) REFERENCES artists (id) ON DELETE CASCADE
     )`).run()
-    database.prepare(`CREATE INDEX IF NOT EXISTS idx_songs_artists_artist_id_song_id
-        ON songs_artists (artist_id, song_id);`).run()
+    database.prepare(`CREATE INDEX IF NOT EXISTS idx_songs_artists_composite 
+        ON songs_artists (song_id, artist_id);`).run()
 
     // create songs names table
     database.prepare(`CREATE TABLE IF NOT EXISTS songs_names (
@@ -98,8 +102,8 @@ export default function init(
         view_type INTEGER NOT NULL,
         PRIMARY KEY (song_id, timestamp, video_id),
         FOREIGN KEY (song_id) REFERENCES songs (id) ON DELETE CASCADE)`).run()
-    database.prepare(`CREATE INDEX IF NOT EXISTS idx_views_breakdowns_timestamp_song_id
-    ON views_breakdowns (timestamp, song_id);`).run()
+    database.prepare(`CREATE INDEX IF NOT EXISTS idx_views_breakdowns_composite 
+    ON views_breakdowns (timestamp, song_id, view_type, views)`).run()
 
     // create views metadata table
     database.prepare(`CREATE TABLE IF NOT EXISTS views_metadata (

@@ -15,6 +15,7 @@ import { useRef, useState } from "react"
 import { Filter, FilterType, InputFilter, MultiFilter, RankingsViewMode, SelectFilter, TrendingFilterBarValues, TrendingFilters } from "./types"
 import { ToggleGroupFilterElement } from "@/components/filter/toggle-group-filter"
 import { MultiSelectFilterElement } from "@/components/filter/multi-select-filter"
+import { FilledTonalButton } from "@/components/material/filled-tonal-button"
 
 const minimumTimestampMillis = 29 * 24 * 60 * 60 * 1000
 
@@ -25,12 +26,14 @@ export function TrendingActiveFilterBar(
         currentTimestamp,
         setFilterValues,
         setRankingsViewMode,
+        playlistUrl
     }: {
         filters: TrendingFilters
         filterValues: TrendingFilterBarValues
         currentTimestamp: Date
         setFilterValues: (newValues: TrendingFilterBarValues, route?: boolean, merge?: boolean) => void,
-        setRankingsViewMode: (newMode: RankingsViewMode) => void
+        setRankingsViewMode: (newMode: RankingsViewMode) => void,
+        playlistUrl: string | null
     }
 ) {
 
@@ -218,6 +221,7 @@ export function TrendingActiveFilterBar(
                     <IconButton icon='view_agenda' onClick={_ => setRankingsViewMode(RankingsViewMode.LIST)} />
                     <IconButton icon='grid_view' onClick={_ => setRankingsViewMode(RankingsViewMode.GRID)} />
 
+                    <li key='listen-button'><FilledTonalButton icon="headphones" text={langDict.rankings_listen} href={playlistUrl ?? ""}/></li>
                     <li key='filter-button' className="md:block hidden"><FilledButton icon={filtersExpanded ? 'expand_less' : 'expand_more'} text={langDict.rankings_filter} onClick={() => setFiltersExpanded(!filtersExpanded)} /></li>
                 </ul>
             </div>

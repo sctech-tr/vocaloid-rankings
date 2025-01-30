@@ -95,11 +95,18 @@ export function TrendingRankingsList(
     // import graphql context
     const [queryVariables, setQueryVariables] = useState(getQueryVariables)
     const { loading, error, data } = useQuery(GET_SONG_RANKINGS, {
-        variables: queryVariables
+        variables: queryVariables,
+        skip: !filterBarValuesLoaded
     })
     const rankingsResult = data?.songRankings as ApiSongRankingsFilterResult | undefined
+    
+    let youtubePlaylistUrl: string | null = null;
+    if (rankingsResult !== undefined) {
+        // https://www.youtube.com/watch_videos?video_ids=sV2H712ldOI,_JeLNAjjBHw
+        let videoIds = rankingsResult.results.map(song => song.song.videoIds.youtube?.[0] ?? null).filter(val => val !== null);
+        youtubePlaylistUrl = `https://www.youtube.com/watch_videos?video_ids=${videoIds.join(",")}`
+    }
 
-    // function for saving filter values & updating the UI with the new values.
     // function for saving filter values & updating the UI with the new values.
     function saveFilterValues(
         newValues: TrendingFilterBarValues,
@@ -147,6 +154,7 @@ export function TrendingRankingsList(
                 currentTimestamp={currentTimestampDate}
                 setFilterValues={saveFilterValues}
                 setRankingsViewMode={setRankingsViewMode}
+                playlistUrl={youtubePlaylistUrl}
             />
             <Divider className="mb-5" />
             {error ? <RankingsApiError error={error} />

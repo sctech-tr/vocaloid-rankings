@@ -145,6 +145,13 @@ export function RankingsList(
     })
     const rankingsResult = data?.songRankings as ApiSongRankingsFilterResult | undefined
 
+    let youtubePlaylistUrl: string | null = null;
+    if (rankingsResult !== undefined) {
+        // https://www.youtube.com/watch_videos?video_ids=sV2H712ldOI,_JeLNAjjBHw
+        let videoIds = rankingsResult.results.map(song => song.song.videoIds.youtube?.[0] ?? null).filter(val => val !== null);
+        youtubePlaylistUrl = `https://www.youtube.com/watch_videos?video_ids=${videoIds.join(",")}`
+    }
+
     // function for saving filter values & updating the UI with the new values.
     function saveFilterValues(
         newValues: SongRankingsFilterBarValues,
@@ -239,6 +246,7 @@ export function RankingsList(
                 setRankingsViewMode={setRankingsViewMode}
                 entityNames={entityNames}
                 setEntityNames={newNames => setEntityNames({ ...newNames })}
+                playlistUrl={youtubePlaylistUrl}
             />
             <Divider className="mb-5" />
 

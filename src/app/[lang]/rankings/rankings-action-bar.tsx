@@ -6,6 +6,7 @@ import { useLocale } from "@/components/providers/language-dictionary-provider"
 import { MouseEventHandler } from "react"
 import { RankingsViewMode } from "./types"
 import { FilledButton } from "@/components/material/filled-button"
+import { FilledTonalButton } from "@/components/material/filled-tonal-button"
 
 
 export function RankingsActionBar(
@@ -17,7 +18,8 @@ export function RankingsActionBar(
         onFilterDirectionToggle,
         onViewModeChanged,
         onExpandToggle,
-        onDrawerToggle
+        onDrawerToggle,
+        playlistUrl,
     }: {
         orderBy: React.ReactNode
         filtersExpanded?: boolean
@@ -26,6 +28,7 @@ export function RankingsActionBar(
         onViewModeChanged?: (newViewMode: RankingsViewMode) => void
         onExpandToggle?: MouseEventHandler
         onDrawerToggle?: MouseEventHandler
+        playlistUrl: string | null
     }
 ) {
     const langDict = useLocale()
@@ -54,6 +57,7 @@ export function RankingsActionBar(
                         onViewModeChanged?.(RankingsViewMode.GRID)
                     }} />
 
+                    <li key="listen-button"><FilledTonalButton icon="headphones" text={langDict.rankings_listen} href={playlistUrl ?? ""}/></li>
                     <li key='filter-button' className="md:block hidden"><FilledButton icon={ filtersExpanded ? 'expand_less' : 'expand_more' } text={langDict.rankings_filter} onClick={onExpandToggle} /></li>
                 </ul>
             </div>

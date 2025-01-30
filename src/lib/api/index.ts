@@ -120,6 +120,9 @@ query SongRankings(
                     romaji
                     english
                 }
+                videoIds {
+                   youtube
+                }
             }
         }
     }
