@@ -1,5 +1,5 @@
 import { deleteSongUser, filterArtistRankings, filterSongRankings, getArtist, getArtistPlacement, getArtistViews, getMostRecentViewsTimestamp, getSong, getSongPlacement, getSongViews, insertSong, insertSongViews, refreshAllSongsViews, searchArtists, serachSongs, songExists, updateSong } from '@/data/songsData'
-import { Artist, ArtistCategory, ArtistRankingsFilterParams, ArtistThumbnailType, ArtistThumbnails, FilterDirection, FilterInclusionMode, FilterOrder, NameType, Names, Song, SongArtistsCategories, SongRankingsFilterParams, SongVideoIds, SourceType, VideoViews, ViewsBreakdown } from '@/data/types'
+import { Artist, ArtistCategory, ArtistRankingsFilterParams, ArtistThumbnailType, ArtistThumbnails, FilterDirection, FilterInclusionMode, FilterOrder, NameType, Names, Song, SongArtistsCategories, SongRankingsFilterParams, SongVideoIds, SourceType, UserAccessLevel, VideoViews, ViewsBreakdown } from '@/data/types'
 import { getVocaDBSong, parseVocaDBSongId } from '@/lib/vocadb'
 import {
     GraphQLEnumType,
@@ -1821,14 +1821,18 @@ const mutationType = new GraphQLObjectType({
                     id
                 }: {
                     id: number
-                }
+                },
+                context: GraphQLContext
             ) => getSong(id)
                 .then(async song => {
                     if (!song) throw new Error(`Song with ID ${id} does not exist.`)
+                    
+                    const isAuthorized = (context.user !== null && context.user.accessLevel >= UserAccessLevel.MODERATOR)
+
                     // ensure that the song hasn't been refreshed yet
                     const lastRefreshed = song.lastRefreshed
                     const dateNow = new Date()
-                    if (lastRefreshed && ((24 * 60 * 60 * 1000) > (dateNow.getTime() - new Date(lastRefreshed).getTime()))) throw new Error('Songs can only be refreshed once a day.')
+                    if ((lastRefreshed && ((24 * 60 * 60 * 1000) > (dateNow.getTime() - new Date(lastRefreshed).getTime()))) && !isAuthorized) throw new Error('Songs can only be refreshed once a day.')
 
                     // get the refreshed song from voca DB
                     const vocaDbSong = (await getVocaDBSong(id)) as Partial<Song> & Pick<Song, "id">
