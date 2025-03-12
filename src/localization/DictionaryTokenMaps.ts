@@ -26,7 +26,7 @@ export const ArtistTypeLocaleTokens: {[key in ArtistType]: LanguageDictionaryKey
     [ArtistType.VOISONA]: 'filter_artist_type_voisona',
     [ArtistType.NEUTRINO]: 'filter_artist_type_neutrino',
     [ArtistType.VOICEROID]: 'filter_artist_type_voiceroid',
-    [ArtistType.NEW_TYPE]: 'filter_artist_type_new_type',
+    [ArtistType.NEW_TYPE]: 'filter_artist_type_new_type'
 }
 
 export const SongTypeLocaleTokens: {[key in SongType]: LanguageDictionaryKey} = {
