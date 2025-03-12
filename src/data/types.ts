@@ -43,7 +43,12 @@ export enum ArtistType {
     OTHER_INDIVIDUAL,
     OTHER_GROUP,
     UTAU,
-    PROJECT_SEKAI
+    PROJECT_SEKAI,
+    VOICEVOX,
+    VOISONA,
+    NEUTRINO,
+    VOICEROID,
+    NEW_TYPE
 }
 
 export enum PlacementChange {
